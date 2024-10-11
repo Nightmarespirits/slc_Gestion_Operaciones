@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/icon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar Sesion</title>
+    <script type='module'>
+        import 'vuetify/styles'  // Importa los estilos globales de Vuetify
+        import '@mdi/font/css/materialdesignicons.css'  // Iconos opcionales
+
+
+        import { createApp } from 'vue'
+        import { createPinia } from 'pinia'
+        import { createVuetify } from 'vuetify'
+        import * as components from 'vuetify/components'
+        import * as directives from 'vuetify/directives'
+
+        import router from './src/router'
+
+
+        import Login from './src/Login.vue'
+
+        const login = createApp(Login)
+        const pinia = createPinia()
+        const vuetify = createVuetify({
+            components,
+            directives,
+            theme: {
+                defaultTheme: 'light',
+            },
+        })
+
+        login.use(router)
+        login.use(pinia)
+        login.use(vuetify)
+
+        login.mount('#login')
+
+    </script>
+  </head>
+  <body>
+    <div id="login"></div>
+  </body>
+</html>
