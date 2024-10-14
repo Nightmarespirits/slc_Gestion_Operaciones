@@ -5,7 +5,7 @@
       </v-app-bar-nav-icon>
       <v-toolbar-title>Speed Wash S.A.</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn to="/" text>Inicio</v-btn>
+      <v-btn to="/home" text>Inicio</v-btn>
       <v-btn to="/about" text>Acerca De</v-btn>
       <v-menu
         transition="scale-transition"

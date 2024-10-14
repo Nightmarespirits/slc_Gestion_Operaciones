@@ -4,7 +4,7 @@
         <v-col class="text-center">
           <div class="svg-container">
             <v-img
-              src="/public/error-page-svgrepo-com.svg" 
+              src="/error-page-svgrepo-com.svg" 
               max-width="300"
               alt="Página no encontrada"
             ></v-img>

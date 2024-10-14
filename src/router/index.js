@@ -5,9 +5,14 @@ const router = createRouter({
     routes: [
         {
             path: '/',
+            name: 'LandingPage',
+            component: () => import('../LandingPage.vue')
+        },
+        {
+            path: '/home',
             name: 'Home',
             component: () => import('../views/home.vue'),
-            meta:{requiresAuth: true, planes: ['basic', 'pro']}
+            meta:{requiresAuth: false, planes: ['basic', 'pro']}
         },
         {
             path: '/login',
@@ -24,7 +29,25 @@ const router = createRouter({
         {
             path: '/lavado',
             name: 'Lavado',
-            component: () => import('../views/lavado.vue'),
+            component: () => import('../views/procesosPages/lavado.vue'),
+            meta:{requiresAuth: true, planes: ['basic', 'pro']}
+        },
+        {
+            path: '/secado',
+            name: 'Secado',
+            component: () => import('../views/procesosPages/secado.vue'),
+            meta:{requiresAuth: true, planes: ['basic', 'pro']}
+        },
+        {
+            path: '/planchado',
+            name: 'Planchado',
+            component: () => import('../views/procesosPages/planchado.vue'),
+            meta:{requiresAuth: true, planes: ['basic', 'pro']}
+        },
+        {
+            path: '/doblado',
+            name: 'Doblado',
+            component: () => import('../views/procesosPages/doblado.vue'),
             meta:{requiresAuth: true, planes: ['basic', 'pro']}
         },
         {
@@ -47,7 +70,7 @@ router.beforeEach((to, from, next) => {
     // Verificar si la ruta requiere autenticación
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     // Redirigir a la página de login si no está autenticado
-    window.location.href = '/login'
+    next({ name: 'Login' });
   }else {
     // Permitir el acceso a la ruta
     next();

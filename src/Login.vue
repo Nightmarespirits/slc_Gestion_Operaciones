@@ -3,7 +3,7 @@
       <v-img
         class="mx-auto my-6"
         max-width="228"
-        src="/logo.png"
+        src="/slc_logo.png"
       ></v-img>
   
       <v-card
@@ -82,6 +82,7 @@
 import { ref } from 'vue';
 import { computed } from 'vue';
 import { useAuthStore } from './store/auth';
+import router from './router';
 
 const authStore = useAuthStore()
 const account = ref('')
@@ -92,14 +93,14 @@ const loginStatus = ref('')
 const msg = computed(()=>{
   return loginStatus.value? "Inicio de Sesion Exitoso"
           :loginStatus.value === false ? "No se pudo iniciar sesion compruebe sus creadenciales"
-          : `Advertencia: Después de 3 intentos fallidos consecutivos de inicio de sesión, su cuenta se bloqueará temporalmente durante tres horas. Si debe iniciar sesión ahora, también puede hacer clic en "¿Olvidó su contraseña de inicio de sesión?" a continuación para restablecer la contraseña de inicio de sesión.`
+          : ""
 })
 
 const handleLogin = async () => {
   const loggedIn = await authStore.login(account.value, password.value)
 
   if(loggedIn){
-    window.location.href = "/"
+    router.push('/home')
     loginStatus.value = true
   }else{
     loginStatus.value = false

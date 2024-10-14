@@ -10,7 +10,7 @@
   
       <v-divider></v-divider>
       <v-list density="compact" nav>
-        <v-list-item prepend-icon="mdi-home" title="Inicio" to="/" value="home"></v-list-item>
+        <v-list-item prepend-icon="mdi-home" title="Inicio" to="/home" value="home"></v-list-item>
       </v-list>
 
       <v-divider></v-divider>
@@ -19,8 +19,8 @@
         <v-list-item prepend-icon="mdi-thermometer-lines" title="Secado" to="/secado" value="secado"></v-list-item>
         <v-list-item prepend-icon="mdi-hanger" title="Doblado" to="/doblado" value="doblado"></v-list-item>
         <v-list-item prepend-icon="mdi-temperature-fahrenheit" title="Planchado" to="/planchado" value="planchado"></v-list-item>
-        <v-list-item prepend-icon="mdi-water" title="Teñido" to="/tenido" value="planchado"></v-list-item>
-        <v-list-item prepend-icon="mdi-check-circle-outline" title="Finalizados" to="/finalizado" value="planchado"></v-list-item>
+        <v-list-item prepend-icon="mdi-water" title="Teñido" to="/tenido" value="tenido"></v-list-item>
+        <v-list-item prepend-icon="mdi-check-circle-outline" title="Finalizados" to="/finalizado" value="finalizado"></v-list-item>
       </v-list>
     </v-navigation-drawer>
   </template>

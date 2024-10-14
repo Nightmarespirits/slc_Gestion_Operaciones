@@ -11,7 +11,7 @@
         <v-col cols="12" md="6">
             <v-card>
             <v-card-title>
-                Datos de La Empresa
+                Datos de La Cuenta
                 <v-spacer></v-spacer>
                 <v-btn @click="toggleEdit" color="primary" outlined>
                 {{ isEditing ? 'Cancelar' : 'Editar datos de empresa' }}
@@ -89,7 +89,7 @@
         <!-- Sección de Información Personal -->
         <v-col cols="12" md="6">
             <v-card>
-            <v-card-title> Datos de la cuenta</v-card-title>
+            <v-card-title>Configuracion de Empresa</v-card-title>
             <v-list>
                 <v-list-item prepend-icon="mdi-store" title="Locales" to="/locales" value="locales"></v-list-item>
                 <v-list-item prepend-icon="mdi-account-group" title="Empleados" to="/empleados" value="empleados"></v-list-item>

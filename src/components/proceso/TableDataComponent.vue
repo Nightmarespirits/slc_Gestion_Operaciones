@@ -69,7 +69,7 @@ import { defineProps } from 'vue';
 import { defineEmits } from 'vue';
 // Modelo de búsqueda
 const search = ref('');
-const emit = defineEmits(['open-dialog']);
+const emit = defineEmits(['open-dialog', 'item-selected']);
 
 const props = defineProps({
   title: {
@@ -93,9 +93,8 @@ const openDialog = (item) => {
 };
 
 
-const rowSelected = (item) => {
-  console.log('fila clickeada: ', item)
-  alert(`Haz clickeado en el elemento con N° ORDEN: ${item.local}`)
+const rowSelected = (evt, row) => {
+  emit('item-selected', row.item);
 
 }
 
