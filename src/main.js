@@ -1,7 +1,6 @@
 import 'vuetify/styles'  // Importa los estilos globales de Vuetify
 import '@mdi/font/css/materialdesignicons.css'  // Iconos opcionales
 
-
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createVuetify } from 'vuetify'

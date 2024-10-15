@@ -17,7 +17,7 @@ export const useAuthStore = defineStore('auth', {
     actions:{
         async login(companyName, companyPassword){
             try {
-                const response = await axios.post('http://localhost:5000/auth/login',{ companyName, companyPassword})
+                const response = await axios.post( `${import.meta.env.VITE_API_URL}/auth/login`,{ companyName, companyPassword})
 
                 this.token = response.data.token
                 this.company = decoderJWT(response.data.token)

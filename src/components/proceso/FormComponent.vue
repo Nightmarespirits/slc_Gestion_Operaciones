@@ -346,7 +346,7 @@ const saveData = async() => {
                 detalles: details.value,
                 estado: estado.value
             }
-            const response = await axios.post('http://localhost:5000/procesos', data)
+            const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos`, data)
             emit('showAlert', response.data.message)
             emit('onRegAdded')
         } catch (error) {
@@ -363,7 +363,7 @@ const saveData = async() => {
 
 const cargarSedes = async () => {
     try {
-    	const response = await axios.get('http://localhost:5000/sede');
+    	const response = await axios.get( `${import.meta.env.VITE_API_URL}/sede`);
         sedeItems.value = response.data;
     } catch (error) {
         console.error('Error al cargar locales:', error);
@@ -372,7 +372,7 @@ const cargarSedes = async () => {
 
 const cargarResponsables = async () => {
 	try {
-		const response = await axios.get('http://localhost:5000/empleado')
+		const response = await axios.get( `${import.meta.env.VITE_API_URL}/empleado`)
 		responsableItems.value = response.data
 	} catch (error) {
 		console.error('Error al cargar Responsables:', error);

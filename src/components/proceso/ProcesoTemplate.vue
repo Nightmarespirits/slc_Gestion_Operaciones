@@ -63,6 +63,7 @@
     </v-container>
 </template>
 <script setup>
+    
     import { onMounted, ref } from 'vue'
     import TableDataComponent from './TableDataComponent.vue';
     import axios from 'axios';
@@ -106,7 +107,7 @@
     }
     const cargarRegistros = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/procesos')
+            const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos`)
             dataItems.value = response.data
         } catch (error) {
             console.log("Error al Cargar los datos de Registros" + error)

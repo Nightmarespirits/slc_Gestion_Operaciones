@@ -77,10 +77,8 @@
     
 </template>
 <script setup>
-import { ref } from 'vue';
 import { useForm, useField } from 'vee-validate';
 import axios from 'axios';
-
 
 const {handleSubmit} = useForm({
   validationSchema: {
@@ -121,7 +119,7 @@ const terms = useField('terms')
 const sendData = handleSubmit( async (values) => {
   try {
         console.log(JSON.stringify(values))
-        const response = await axios.post('http://localhost:5000/auth/register/', JSON.stringify(values))
+        const response = await axios.post(  `${import.meta.env.VITE_API_URL}/register`, JSON.stringify(values))
         console.log("data " + response.data);
         
   } catch (error) {
