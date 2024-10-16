@@ -20,7 +20,12 @@
         </template>
   
         <div class="d-flex flex-1-1-0 ps-md-4">
-          <v-avatar image="/slc_logo.png" />
+          <v-img 
+          src="/slc_logo_Expanded.png" 
+          height="120"
+          contain 
+          class="ma-2" 
+          ></v-img>
         </div>
   
         <div class="d-md-flex d-none ga-4 mx-auto">
@@ -41,7 +46,7 @@
             </v-chip>
             -->
             <h1 class="text-h4 text-md-h2 font-weight-bold my-6">
-              Lleva tu negocio a otro Nivel
+              SLC Lleva tu negocio a otro Nivel
             </h1>
   
             <div class="text-body-1 text-medium-emphasis mb-10">

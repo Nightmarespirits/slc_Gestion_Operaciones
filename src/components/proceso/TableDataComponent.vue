@@ -21,11 +21,11 @@
     <v-divider></v-divider>
 
     <v-data-table
+      v-model="itemSelected"
       :search="search"   
       :headers="dataHeaders"
       :items="dataItems"
-      :items-per-page="10" 
-      @click:row="rowSelected"     
+      :items-per-page="10"    
       item-value="responsable"
       hover
     >
@@ -36,7 +36,7 @@
         {{ `${item.responsable.apellidos } ${item.responsable.nombres}` }}
       </template>
       <template v-slot:item.estado="{ item }">
-          <div class="text-end">
+          <div>
             <v-chip
               :color="item.estado ? 'green' : 'red'"
               :text="item.estado ? 'Finalizado' : 'Pendiente'"
@@ -46,18 +46,24 @@
             ></v-chip>
           </div>
       </template>
-      <template v-slot:item.details="{item}">
-        <div>
-          
-          <v-btn variant="plain" append-icon="mdi-open-in-new" @click="openDialog(item)">
-            ver
-            <template v-slot:append>
-                <v-icon color="warning"></v-icon>
-            </template>
+      <template v-slot:item.acciones="{ item }">
+        
+          <v-btn 
+          variant="plain" 
+          icon="mdi-open-in-new" 
+          @click="openDialog(item)"
+          color="warning"
+          >
           </v-btn>
-        </div>
+        
+        <v-btn 
+        variant="plain" 
+        icon="mdi-pencil" 
+        @click="rowSelected(item)"
+        color="success"
+        >  
+        </v-btn>
       </template>
-
     </v-data-table>
   </v-card>
 </template>
@@ -70,7 +76,7 @@ import { defineEmits } from 'vue';
 // Modelo de búsqueda
 const search = ref('');
 const emit = defineEmits(['open-dialog', 'item-selected']);
-
+const itemSelected = ref([])
 const props = defineProps({
   title: {
     type: String,
@@ -93,10 +99,9 @@ const openDialog = (item) => {
 };
 
 
-const rowSelected = (evt, row) => {
-  emit('item-selected', row.item);
+const rowSelected = (item) => {
+  emit('item-selected', item);
 
 }
-
 
 </script>

@@ -1,6 +1,6 @@
 <template>
     <v-container>
-        <h1>Nuevo Proceso {{tipoProceso }}</h1>
+        <h1>Nuevo Proceso {{title}}</h1>
 
         <!--Alert-->
         <v-alert
@@ -64,27 +64,15 @@
 </template>
 <script setup>
     
-    import { onMounted, ref , watchEffect } from 'vue'
+    import { onMounted, ref} from 'vue'
     import TableDataComponent from './TableDataComponent.vue';
     import axios from 'axios';
     import FormComponent from './FormComponent.vue';
-
-    //Props
-    const props = defineProps({
-        tipoProceso: {
-            type: String,
-            required: true
-        }
-    })
     
     const selectedItem = ref(null)
 
-    const title = props.tipoProceso
-    watchEffect(() => {
-    // Este bloque se ejecutará cada vez que tipoProceso cambie
-    console.log('Tipo de Proceso cambiado a:', props.tipoProceso);
-    // Actualiza el estado o ejecuta lógica basada en tipoProceso
-    });
+    const title = ref('Doblado')
+
     const dialog = ref(false)
     const alert = ref(false)
     const alertMsg = ref('')

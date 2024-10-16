@@ -6,14 +6,13 @@
     </v-breadcrumbs>
 
     <!--Template-->
-    <ProcesoTemplate :tipoProceso="tipo">
-    </ProcesoTemplate>
+    <ProcesoSecadoTemplate/>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import ProcesoTemplate from '../../components/proceso/ProcesoTemplate.vue';
-const tipo = "Secado"
+import ProcesoSecadoTemplate from '../../components/proceso/ProcesoSecadoTemplate.vue';
+
 //Breadcumb
 const breadcumbItems = ref([
     {

@@ -1,5 +1,39 @@
-# Vue 3 + Vite
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+# SLC Gestion de Operaciones Internas
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+Aplicativo web para gestionar aplicaciones internas de lavanderias
+
+
+
+## Authors
+
+- [@NightmareSpirits](https://github.com/Nightmarespirits)
+
+
+## Deployment
+
+To deploy this project run
+
+```bash
+  npm run build
+```
+
+
+## Documentation
+
+[Documentation](https://linktodocumentation)
+
+
+## 🚀 About Me
+I'm a full stack developer...
+
+
+![Logo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/th5xamgrr6se0x5ro4g6.png)
+
+
+## Roadmap
+
+- Additional browser support
+
+- Add more integrations
+
