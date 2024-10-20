@@ -3,7 +3,7 @@
       <v-list>
         <v-list-item
           prepend-avatar="../assets/icon.ico"
-          title="SW Panel"
+          title="SLC Panel"
           subtitle="Gestion de Operaciones"
         ></v-list-item>
       </v-list>
@@ -14,11 +14,11 @@
       </v-list>
 
       <v-divider></v-divider>
-      <v-list density="compact" nav>
+      <v-list density="compact" nav color="primary">
         <v-list-item prepend-icon="mdi-water-pump" title="Lavado" to="/lavado" value="lavado"></v-list-item>
         <v-list-item prepend-icon="mdi-thermometer-lines" title="Secado" to="/secado" value="secado"></v-list-item>
-        <v-list-item prepend-icon="mdi-hanger" title="Doblado" to="/doblado" value="doblado"></v-list-item>
         <v-list-item prepend-icon="mdi-temperature-fahrenheit" title="Planchado" to="/planchado" value="planchado"></v-list-item>
+        <v-list-item prepend-icon="mdi-hanger" title="Doblado" to="/doblado" value="doblado"></v-list-item>
         <v-list-item prepend-icon="mdi-water" title="Teñido" to="/tenido" value="tenido"></v-list-item>
         <v-list-item prepend-icon="mdi-check-circle-outline" title="Finalizados" to="/finalizado" value="finalizado"></v-list-item>
       </v-list>

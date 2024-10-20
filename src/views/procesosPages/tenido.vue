@@ -1,6 +1,13 @@
 <template>
+    <v-breadcrumbs :items="breadcumbItems">
+        <template v-slot:prepend>
+            <v-icon icon="mdi-home" size="small"></v-icon>
+        </template>
+    </v-breadcrumbs>
+
+    <!--Contenido de la pagina-->
     <v-container>
-        <h1>Nuevo Proceso Lavado</h1>
+        <h1>Nuevo Proceso {{title}}</h1>
 
         <!--Alert-->
         <v-alert
@@ -35,7 +42,7 @@
                     @click="dialog = false"
                 ></v-btn>
 
-                <v-toolbar-title>Detalles de Proceso {{ procesoID }} </v-toolbar-title>
+                <v-toolbar-title>Proceso ID: {{ procesoID }} </v-toolbar-title>
 
                 <v-spacer></v-spacer>
 
@@ -51,12 +58,16 @@
             <v-container>
                 <v-row>
                     <v-col>
+                        <p class="text-h5 my-6 ">Operacion ID:</p>
+                        <p>{{ operacionID }}</p>
+                    </v-col>
+                    <v-col>
                         <p class="text-h5 my-6 ">Responsable</p>
                         <p>{{ procesoResponsable }}</p>
                     </v-col>
                     <v-col>
                         <p class="text-h5 my-6 ">Local</p>
-                        <p>{{ procesoResponsable }}</p>
+                        <p>{{ procesoSede }}</p>
                     </v-col>
                 </v-row>
                 <v-row>
@@ -103,12 +114,12 @@
                             :rowspan="item.rowspan2"
                             class="text-center"
                         >
-                            {{ item.maquina }}
+                            {{ item?.maquina?.nombre || '[No agregado]'}}
                         </td>
                         
-                        <td class="text-center">{{ item.cantidad }}</td>
-                        <td class="text-center">{{ item.colorMarcado }}</td>
-                        <td class="text-center">{{ item.obs }}</td>
+                        <td class="text-center">{{item.cantidad}}</td>
+                        <td class="text-center">{{item?.colorMarcado || '[No agregado]' }}</td>
+                        <td class="text-center">{{item?.obs || '[No agregado]'}}</td>
                         </tr>
                     </tbody>
                 </v-table>
@@ -126,68 +137,97 @@
         :dataHeaders="dataHeaders" 
         :dataItems="dataItems">
         </TableDataComponent>
-        
+        <!--Fin de la tabla procesos -->
     </v-container>
+    <!--Fin del Contenido de la pagina-->
 </template>
+
 <script setup>
-    
-    import { onMounted, ref } from 'vue'
-    import TableDataComponent from './TableDataComponent.vue';
-    import axios from 'axios';
-    import FormComponent from './FormComponent.vue';
-import { mergeTableData } from '../../utils/mergeTableData';
-    
-    const selectedItem = ref(null)
-    
-    const mergedDetails = ref([])
-    const procesoData = ref(null)
-    const title = ref('Lavado')
+import { onMounted, ref } from 'vue'
+import axios from 'axios';
+import TableDataComponent from '../../components/proceso/TableDataComponent.vue';
+import FormComponent from '../../components/proceso/FormComponent.vue';
+import { mergeTableData } from '../../utils/mergeTableData.js';
+//Breadcumb
+const breadcumbItems = ref([
+    {
+    title: 'Dashboard',
+    disabled: false,
+    href: '/',
+    },
+    {
+    title: 'Operaciones',
+    disabled: false,
+    href: '/operaciones',
+    },
+    {
+    title: 'Lavado',
+    disabled: true,
+    href: '/lavado',
+    }
+])
+ 
+const selectedItem = ref(null)
 
-    const dialog = ref(false)
-    const alert = ref(false)
-    const alertMsg = ref('')
-    const dataItems = ref([])
-    const dataHeaders = [
-        {align: 'start', key:'_id', title: 'ID'},
-        { align: 'center', key: 'fecha', title: 'Fecha' },
-        { align: 'center', key: 'hora', title: 'Hora' },
-        { align: 'center', key: 'estado', title: 'Estado' },
-        { align: 'end', key: 'acciones', title: 'Acciones'}
-    ]
+const mergedDetails = ref([])
+const procesoData = ref(null)
+const title = ref('Teñido')
 
-    //del boton editar
-    const handleItemSelected = (item) => {
-        selectedItem.value = item
-        console.log(item)
-    }
+const dialog = ref(false)
+const alert = ref(false)
+const alertMsg = ref('')
+const dataItems = ref([])
+const dataHeaders = [
+    { align: 'start', key:'responsable', title: 'Responsable'},
+    { align: 'center', key: 'fecha', title: 'Fecha' },
+    { align: 'center', key: 'hora', title: 'Hora' },
+    { align: 'center', key: 'estado', title: 'Estado' },
+    { align: 'end', key: 'acciones', title: 'Acciones'}
+]
 
-    //Datos para el modo ver Registro de proceso
-    const procesoResponsable = ref('')
-    const procesoSede = ref('')
-    const procesoID = ref('')
-    const procesoEstado = ref(false)
-    //Del boton ver detalles
-    const showDetails = (item) => {
-        procesoData.value = item
-        mergedDetails.value = mergeTableData(item.detalles)
-        dialog.value = true
+//del boton editar
+const handleItemSelected = (item) => {
+    selectedItem.value = item
+}
+
+//Datos para el modo ver Registro de proceso
+const operacionID = ref('')
+const procesoResponsable = ref('')
+const procesoSede = ref('')
+const procesoID = ref('')
+const procesoEstado = ref(false)
+//Del boton ver detalles
+const showDetails = (item) => {
+    operacionID.value = item.operacion || '[No agregado]'
+    procesoResponsable.value = `${item?.responsable?.apellidos || '[No agregado]' } ${item?.responsable?.nombres || '[No agregado]'} `
+    procesoSede.value = item?.sede?.nombre || '[No agregado]'
+    procesoID.value = item._id
+    procesoEstado.value = item?.estado || '[No agregado]'
+    procesoData.value = item
+    mergedDetails.value = mergeTableData(item.detalles)
+    dialog.value = true
+}
+const activeAlert = (msg) => {
+    alertMsg.value = msg
+    alert.value = true
+    setTimeout(() => {
+        alert.value = false
+    }, 3000)
+}
+const cargarRegistros = async () => {
+    try {
+        const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos/filter`, {
+            params: {
+                tipo: title.value.toLowerCase()
+            }
+        })
+        dataItems.value = response.data
+    } catch (error) {
+        console.error("Error al Cargar los datos de Registros" + error)
     }
-    const activeAlert = (msg) => {
-        alertMsg.value = msg
-        alert.value = true
-        setTimeout(() => {
-        	alert.value = false
-        }, 3000)
-    }
-    const cargarRegistros = async () => {
-        try {
-            const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos`)
-            dataItems.value = response.data
-        } catch (error) {
-            console.log("Error al Cargar los datos de Registros" + error)
-        }
-    }
-    onMounted(()=>{
-        cargarRegistros()
-    })
+}
+onMounted(()=>{
+    cargarRegistros()
+})
 </script>
+

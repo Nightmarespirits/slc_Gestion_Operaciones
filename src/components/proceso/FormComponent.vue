@@ -2,30 +2,47 @@
     <form>
         <v-container>
             <v-row>
-                <v-container>
+                <v-col class="d-flex justify-center" xs="12" sm="6">
                     <v-btn
-                    variant="plain"
+                    variant="elevated"
                     append-icon="mdi-autorenew"
+                    height="52"
+                    min-width="164"
                     text="Nuevo"
                     @click="cleanForm"
-                    color="warning"
                     ></v-btn>
-                </v-container>
+                </v-col>
+
+                <v-col class="d-flex justify-center" xs="12" sm="6">
+                    <v-btn
+                    variant="elevated"
+                    append-icon="mdi-content-save"
+                    height="52"
+                    min-width="164"
+                    @click="saveOrUpdateData"
+                    >
+                    {{btnSaveOrUpdateForm}}
+                    <template v-slot:append>
+                        <v-icon></v-icon>
+                    </template>
+                    </v-btn>
+                </v-col>
             </v-row>
             
             <v-row>
-                <v-col>
+                <v-col cols="12" sm="6" md="3">
                     <v-select
                     v-model="sede.value.value"
                     :error-messages="sede.errorMessage.value" 
                     :items="sedeItems" 
+                    @update:modelValue="cargarMaquinas"
                     item-value="_id"
                     item-title="nombre"
                     label="Sede" 
-                    >
-                    </v-select>
+                    />
                 </v-col>
-                <v-col>
+                
+                <v-col cols="12" sm="6" md="3">
                     <v-select
                     v-model="responsable.value.value"
                     :error-messages="responsable.errorMessage.value" 
@@ -33,163 +50,127 @@
                     item-value="_id"
                     item-title="nombres"
                     label="Responsable"
-                    >
-                    </v-select>
+                    />
                 </v-col>
-                <v-col>
+                
+                <v-col cols="12" sm="6" md="3">
                     <v-btn 
                     variant="plain" 
                     prepend-icon="mdi-shape-square-plus" 
                     @click="openDialogDetails(item)"
-                    color="warning"
+                    color="success"
                     height="52"
                     min-width="164"
-                    > {{btnDetalles}}
+                    > 
+                    {{btnAddDetalles}}
                     <v-icon></v-icon>
                     </v-btn>
-                    
-                    <!--Dialog Detalles-->
-                    <v-dialog
-                    v-model="dialog"
-                    transition="dialog-bottom-transition" 
-                    fullscreen
-                    >                                    
+                    <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
                     <v-card>
                         <v-toolbar>
-                        <v-btn
-                        icon="mdi-close"
-                        @click="dialog = false"
-                        ></v-btn>
-
+                        <v-btn icon="mdi-close" @click="dialog = false"></v-btn>
                         <v-toolbar-title>Detalles de Proceso</v-toolbar-title>
-
                         <v-spacer></v-spacer>
-
                         <v-toolbar-items>
-                        <v-btn
-                        text="Cerrar"
-                        variant="text"
-                        @click="dialog = false"
-                        ></v-btn>
+                            <v-btn text="Cerrar" variant="text" @click="dialog = false"></v-btn>
                         </v-toolbar-items>
                         </v-toolbar>
-                        <!--Contenido de el Dialog-->
                         <v-container>
-                            <v-row>
-                                <v-col>
-                                    <v-text-field label="Numero Orden(s)" v-model="numOrden.value.value"  :error-messages="numOrden.errorMessage.value"></v-text-field>
-                                </v-col>
-                                <v-col>
-                                    <v-select label="Maquina" v-model="maquina.value.value" :error-messages="maquina.errorMessage.value" :items="maquinaItems"  ></v-select>
-                                    
-                                </v-col>
-                                <v-col>
-                                    <v-text-field label="Conteo(cantidad)" v-model="cantidad.value.value" hint="Mantente concentrado(a)" :error-messages="cantidad.errorMessage.value"></v-text-field>
-                                </v-col>
-                                <v-col>
-                                    <v-select
-                                    label="Identificador"
-                                    v-model="colorMarcado.value.value"
-                                    :error-messages="colorMarcado.errorMessage.value"
-                                    :items="colorItems"
-                                    item-value="value"
-                                    item-title="text" 
-                                    >
-                                    </v-select>
-                                </v-col>
-                                <v-col>
-                                    <v-text-field label="Observaciones" v-model="obs.value.value" hint="Opcional"  :error-messages="obs.errorMessage.value"></v-text-field>
-                                </v-col>
-                                <v-col>
-                                <v-btn @click="appendDetail"> Agregar</v-btn>
-                                </v-col>
-                            </v-row>
-                            <v-row>
-                                <v-col>
-                                    <v-checkbox
-                                    class="ma-0 pa-0"
-                                    v-model="estado"
-                                    :label="`${estado ? 'Finalizado' : 'Pendiente'}`"
-                                    ></v-checkbox>
-                                </v-col>
-                            </v-row>
-                            <v-table hover>
-                                <thead>
-                                    <tr>
-                                    <th class="text-center">N° ORDEN</th>
-                                    <th class="text-center">MAQUINA</th>
-                                    <th class="text-center">CONTEO</th>
-                                    <th class="text-center">IDENTIFICADOR</th>
-                                    <th class="text-center">OBSERVACIONES</th>
-                                    <th class="text-center">ACCIONES</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(item) in mergedDetails" :key="item.numOrden">
-                                    <!-- NUMORDEN con rowspan-->
-                                    <td 
-                                        v-if="item.rowspan1 > 0"
-                                        :rowspan="item.rowspan1"
-                                        class="text-center"
-                                    >
-                                        {{ item.numOrden }}
-                                    </td>
-                                    
-                                    <!-- MAQUINA con rowspan -->
-                                    <td
-                                        v-if="item.rowspan2 > 0"
-                                        :rowspan="item.rowspan2"
-                                        class="text-center"
-                                    >
-                                        {{ item.maquina }}
-                                    </td>
-                                    
-                                    <td class="text-center">{{ item.cantidad }}</td>
-                                    <td class="text-center">
-                                        <v-chip
-                                        :color="evalColor(item.colorMarcado)"  
-                                        class="text-lowercase"
-                                        size="small"
-                                        label
-                                        >
-                                        {{ item.colorMarcado }}  
-                                        </v-chip>
-                                    </td>
-                                    <td class="text-center">{{ item.obs }}</td>
-                                    <td class="text-center">
-                                        <v-btn 
-                                        variant="plain" 
-                                        icon="mdi-delete" 
-                                        @click="deleteDetail(item)"
-                                        color="red-darken-1"
-                                        >
-                                        </v-btn>
-                                    </td>
-                                    </tr>
-                                </tbody>
-                            </v-table>
+                        <v-row>
+                            <v-col cols="12" sm="6" md="4">
+                                <v-text-field 
+                                label="Numero Orden(s)" 
+                                v-model="numOrden.value.value" 
+                                :error-messages="numOrden.errorMessage.value" 
+                                />
+                            </v-col>
+                            
+                            <v-col cols="12" sm="6" md="4">
+                                <v-select 
+                                label="Maquina" 
+                                v-model="maquina.value.value" 
+                                :error-messages="maquina.errorMessage.value" 
+                                :items="maquinaItems" 
+                                item-value="_id"
+                                item-title="nombre"
+                                return-object
+                                />
+                            </v-col>
+                            
+                            <v-col cols="12" sm="6" md="4">
+                                <v-text-field 
+                                label="Conteo(cantidad)" 
+                                v-model="cantidad.value.value" 
+                                hint="Mantente concentrado(a)" 
+                                :error-messages="cantidad.errorMessage.value" 
+                                />
+                            </v-col>
+                            
+                            <v-col cols="12" sm="6" md="4">
+                                <v-select 
+                                label="Identificador" 
+                                v-model="colorMarcado.value.value" 
+                                :error-messages="colorMarcado.errorMessage.value" 
+                                :items="colorItems" 
+                                item-value="value" 
+                                item-title="text" 
+                                />
+                            </v-col>
+                            
+                            <v-col cols="12" sm="6" md="4">
+                                <v-text-field 
+                                label="Observaciones" 
+                                v-model="obs.value.value" 
+                                hint="Opcional" 
+                                :error-messages="obs.errorMessage.value" 
+                                />
+                            </v-col>
+                            
+                            <v-col cols="12" sm="6" md="4">
+                                <v-btn @click="appendOrUptdateDetails">{{detailBtnAppendOrUpdate}}</v-btn>
+                            </v-col>
+                        </v-row>
+                        <v-table hover>
+                            <thead>
+                            <tr>
+                                <th class="text-center">ID</th>
+                                <th class="text-center">N° ORDEN</th>
+                                <th class="text-center">MAQUINA</th>
+                                <th class="text-center">CONTEO</th>
+                                <th class="text-center">IDENTIFICADOR</th>
+                                <th class="text-center">OBSERVACIONES</th>
+                                <th class="text-center">ACCIONES</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(item) in details" :key="item.numOrden">
+                                <td>{{ item._id || item.id || '[Sin Agregar]' }}</td>
+                                <td class="text-center">{{ item.numOrden }}</td>
+                                <td class="text-center">{{ item.maquina?.nombre || '[Sin Agregar]' }}</td>
+                                <td class="text-center">{{ item.cantidad || '[Sin Agregar]' }}</td>
+                                <td class="text-center">
+                                <v-chip :color="evalColor(item.colorMarcado || '[Sin Agregar]')" class="text-lowercase" size="large" label>
+                                    {{ item.colorMarcado || '[Sin Agregar]'}}
+                                </v-chip>
+                                </td>
+                                <td class="text-center">{{ item.obs || '[Sin Agregar]' }}</td>
+                                <td class="text-center">
+                                <v-btn variant="plain" icon="mdi-pencil" @click="fillDetail(item)" color="blue-darken-1"></v-btn>
+                                <v-btn variant="plain" icon="mdi-delete" @click="deleteDetail(item)" color="red-darken-1"></v-btn>
+
+                                </td>
+                            </tr>
+                            </tbody>
+                        </v-table>
                         </v-container>
-                        <!--Fin de contenido del Dialog-->
                     </v-card>
                     </v-dialog>
-                    <!--Fin del Dialog Detalles-->
                 </v-col>
-                <v-col>
-                    <v-btn
-                    variant="plain"
-                    color="success"
-                    append-icon="mdi-content-save"
-                    height="52"
-                    min-width="164"
-                    @click="saveData"
-                    >
-                    {{btnSave}}
-                    <template v-slot:append>
-                        <v-icon></v-icon>
-                    </template>
-                    </v-btn>
+                <v-col cols="12" sm="6" md="3">
+                    <v-checkbox class="ma-0 pa-0" v-model="estado" :label="`${estado ? 'Finalizado' : 'Pendiente'}`"></v-checkbox>
                 </v-col>
             </v-row>
+
         </v-container>
     </form>
 </template>
@@ -213,7 +194,7 @@ const props = defineProps({
 //Emits
 const emit = defineEmits(['showAlert', 'onRegAdded'])
 
-//Validador
+//Validador general
 const {handleSubmit} = useForm({
     validationSchema: {
         local(value) {
@@ -252,34 +233,17 @@ const {handleSubmit} = useForm({
         }
     },
 })
+
 const title = props.tipoProceso
 const sedeItems = ref([])
 const responsableItems = ref([])
-const maquinaItems = ref(['M1', 'M2'])
-const colorItems = ref(['Rojo', 'Verde', 'Azul', 'Amarillo', 'Blanco'])
+const maquinaItems = ref([])
+const colorItems = ref(['Rojo', 'Verde', 'Azul', 'Amarillo'])
 const dialog = ref(false)
 const details = ref([])
 
-const evalColor = color => {
-    switch (color.toLowerCase()) {
-        case 'rojo':
-            return 'red';
-        case 'verde':
-            return 'green'
-        case 'azul':
-            return 'blue'
-        case 'amarillo':
-            return 'yellow'
-        case 'blanco':
-            return 'white'
-        default:
-            break;
-    }
-}
-//details combinado
-const mergedDetails = computed(() => {
-    return mergeTableData(details.value)
-})
+//datos de los campos
+const id = ref('')
 const sede = useField('local')
 const responsable = useField('responsable')
 const estado = ref(false)
@@ -289,33 +253,47 @@ const maquina = useField('maquina')
 const cantidad = useField('cantidad')
 const colorMarcado = useField('colorMarcado')
 const obs = useField('obs')
-const btnSave = ref('Guardar')
-const btnDetalles = ref('Agregar Detalles')
+
+//Usages Booleans for details screen form
+const detailEditingId = ref(null); // Índice del detalle en edición
+const detailIsEditing = ref(false) // Verificar si estamos en modo edición
+const detailBtnAppendOrUpdate = ref('Agregar'); // Texto dinámico del botón de detalles del dialogo
+
+//Usage booleans for all Form
+const isSequential = ref(true);
+const editionMode = ref(false)
+const btnAddDetalles = ref('Agregar Detalles')
+const btnSaveOrUpdateForm = ref('Guardar')
+
+
 //Observador de seleccion de la tabla de procesos
 watch(() => props.selectedItem, 
 (newItem) => {
   if (newItem) {
-
-    sede.value.value = newItem.sede._id;
-    responsable.value.value = newItem.responsable._id;
-    estado.value = newItem.estado;
-    details.value = newItem.detalles;
-    btnSave.value = 'Actualizar'
+    id.value = newItem._id
+    sede.value.value = newItem.sede?._id || null;
+    responsable.value.value = newItem.responsable?._id || null;
+    estado.value = newItem.estado || false;
+    details.value = newItem.detalles || '';
+    editionMode.value = true
+    btnSaveOrUpdateForm.value = 'Actualizar';
+    
   }
+
 }, { deep: true, immediate: true });
 
-//Obsercar si existen detalles para cambiar texto de botones dinamicamente
+//Obeservador si existen detalles para cambiar texto de botones dinamicamente
 watch(() => details.value, 
 (value) => {
     if(details.value.length > 0){
-        btnDetalles.value = "Ver Detalles"
+        btnAddDetalles.value = "Ver Detalles"
     }else{
-        btnDetalles.value = "Agregar Detalles"
-        
+        btnAddDetalles.value = "Agregar Detalles"
     }
 },
 { deep: true, immediate: true });
-//Verificar Campos Sede y Empleado
+
+//Control de DialogoDetails (fullScreen)
 const canOpenDialog = () => {
   return sede.value.value  && responsable.value.value;
 }
@@ -328,69 +306,128 @@ const openDialogDetails = () => {
     }
 }
 
-const appendDetail = handleSubmit(values => {
-     
-    details.value.unshift({
-        id : details.value.length + 1,
-        numOrden: values.numOrden,
-        maquina : values.maquina,
-        cantidad : values.cantidad,
-        colorMarcado : values.colorMarcado,
-        obs : values.obs
-    })
-    console.log(details.value)
-    
-    limpiarCamposDetails()
+//Metodos para control de la tabla detalles
+const fillDetail = (item) => {
+  // Rellenar los campos del formulario con los datos del item seleccionado
+  numOrden.value.value = item.numOrden;
+  maquina.value.value = item.maquina;
+  cantidad.value.value = item.cantidad;
+  colorMarcado.value.value = item.colorMarcado;
+  obs.value.value = item.obs;
+  detailEditingId.value = item?.id ?? item?._id ?? 'no hallado' ; // Guardar el índice del item en edición
+  detailIsEditing.value = true
+  detailBtnAppendOrUpdate.value = 'Actualizar'; // Cambiar el texto del botón a "Actualizar"
+};
+
+
+const appendOrUptdateDetails = handleSubmit((values) => {
+    if(detailIsEditing.value){
+        updateDetail(values);
+        return;
+    }
+    appendDetail(values)
 })
+const appendDetail = (values) => {
+  const detail = {
+    id: detailIsEditing.value ? detailEditingId.value : details.value.length + 1,
+    numOrden: values.numOrden,
+    maquina: {
+      _id: values.maquina._id,
+      nombre: values.maquina.nombre,
+    },
+    cantidad: values.cantidad,
+    colorMarcado: values.colorMarcado,
+    obs: values.obs,
+  };
+  details.value.unshift(detail);
+
+  limpiarCamposDetails(); // Limpiar los campos después de agregar o actualizar
+};
+
+const updateDetail = (values) => {
+
+    let index = details.value.findIndex(obj => (obj?.id ?? obj?._id ?? '') === detailEditingId.value)
+    details.value[index] = {
+        id: detailEditingId.value,
+        numOrden: values.numOrden,
+        maquina: {
+        _id: values.maquina._id,
+        nombre: values.maquina.nombre,
+        },
+        cantidad: values.cantidad,
+        colorMarcado: values.colorMarcado,
+        obs: values.obs,
+    };
+    detailEditingId.value = null; // Resetear el modo edición
+    detailBtnAppendOrUpdate.value = 'Agregar Detalles'; // Restaurar el texto del botón
+}
+
+const limpiarCamposDetails = () => {
+  numOrden.value.value = '';
+  maquina.value.value = '';
+  cantidad.value.value = '';
+  colorMarcado.value.value = '';
+  obs.value.value = '';
+  detailEditingId.value = null; // Resetear el índice de edición
+  detailIsEditing.value = false
+  detailBtnAppendOrUpdate.value = 'Agregar Detalles'; // Restaurar el texto del botón
+};
 
 const deleteDetail = (item) => {
-    details.value.splice(details.value.findIndex(obj => obj.id === item.id), 1)
-    console.log(item)
-}
-const limpiarCamposDetails = () => {
-    numOrden.value.value = ''
-    maquina.value.value = ''
-    cantidad.value.value = ''
-    colorMarcado.value.value = ''
-    obs.value.value = ''
+    if(item?.id){
+        details.value.splice(details.value.findIndex(obj => obj.id === item.id))
+    }else if( item?._id){
+        details.value.splice(details.value.findIndex(obj => obj._id === item._id))
+    }
 }
 
-
-const cleanForm = () => {
-    sede.value.value = '';
-    responsable.value.value = '';
-    estado.value = false;
-    details.value = [] ;
-    btnSave.value = 'Guardar'
-}
-//http requests
-const saveData = async() => {
-    if(details.value.length != 0){
-        try {
-            const data = {
-                tipo: title.toLowerCase(),
-                sede: {
-                    _id : sede.value.value
-                },
-                responsable: {
-                    _id : responsable.value.value
-                },
-                detalles: details.value,
-                estado: estado.value
-            }
-            const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos`, data)
-            emit('showAlert', response.data.message)
-            emit('onRegAdded')
-        } catch (error) {
-            console.error('Error al enviar datos:', error);
-        }
-    }else{
+//Metodos solicitudes a la API
+const saveOrUpdateData = () => {
+    if(details.value.length === 0){
         let msg = "Asegurese de agregar los detalles correctamente"
         emit('showAlert', msg)  
+        return;
     }
-    
+
+    const data = {
+        tipo: title.toLowerCase(),
+        sede: {
+            _id : sede.value.value
+        },
+        responsable: {
+            _id : responsable.value.value
+        },
+        detalles: details.value,
+        estado: estado.value
+    }
+
+    if(editionMode.value){
+        actualizarData(data)
+       
+    }else{
+        guardarData(data)
+    }
 }
 
+const guardarData = async(data) => {
+    try {
+        const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos${isSequential.value ? '/sequential' : ''}`, data)
+        emit('showAlert', response.data.message)
+        emit('onRegAdded')            
+    } catch (error) {
+        console.error('Error al enviar datos:', error);
+    }
+}
+
+const actualizarData = async(data) => {
+    try {
+        const response = await axios.put( `${import.meta.env.VITE_API_URL}/procesos/${id.value}`, data)
+        emit('showAlert', response.data.message)
+        emit('onRegAdded')            
+    } catch (error) {
+        console.error('Error al intentar Actualizar datos:', error);
+    }
+}
 const cargarSedes = async () => {
     try {
     	const response = await axios.get( `${import.meta.env.VITE_API_URL}/sede`);
@@ -410,13 +447,69 @@ const cargarResponsables = async () => {
 	
 };
 
+const cargarMaquinas = async (sedeID) => {
+    try {
+        let tipoMaquina = ''
+        switch (title) {
+            case 'Lavado':
+                tipoMaquina = 'Lavadora'
+                break;
+            case 'Secado':
+                tipoMaquina = 'Secadora'
+                break;
+            case 'Planchado':
+                tipoMaquina = 'Plancha'
+                break;
+            default:
+                break;
+        }
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/maquina/filter`, {
+            params:{
+                sede: sedeID,
+                tipo: tipoMaquina
+            }
+        })
+
+        maquinaItems.value = response.data
+    } catch (error) {
+        console.error('Error al cargar locales:', error);
+    }
+}
+
 onMounted(()=>{
     cargarSedes()
     cargarResponsables()
 })
-watch(() => props.selectedSede, (value) => {
-    console.log('changed')
-    console.log( value )
-    fillForm()
-}, )
+
+//Otras funciones
+const evalColor = color => {
+    switch (color.toLowerCase()) {
+        case 'rojo':
+            return 'red';
+        case 'verde':
+            return 'green'
+        case 'azul':
+            return 'blue'
+        case 'amarillo':
+            return 'yellow'
+        default:
+            break;
+    }
+}
+const cleanForm = () => {
+    editionMode.value = false
+    sede.value.value = '';
+    responsable.value.value = '';
+    estado.value = false;
+    details.value = [] ;
+    numOrden.value.value = ''
+    maquina.value.value = ''
+    cantidad.value.value = ''
+    colorMarcado.value.value = ''
+    obs.value.value = ''
+    btnSaveOrUpdateForm.value = 'Guardar'
+    detailIsEditing.value = false
+    detailBtnAppendOrUpdate.value = 'Agregar'
+}
+
 </script>

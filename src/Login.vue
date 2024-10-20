@@ -44,17 +44,9 @@
           variant="outlined"
           @click:append-inner="visible = !visible"
         ></v-text-field>
-  
-        <v-card
-          class="mb-12"
-          color="surface-variant"
-          variant="tonal"
-        >
-          <v-card-text class="text-medium-emphasis text-caption">
+        <v-card-text class="text-medium-emphasis text-caption">
             {{ msg }}
-          </v-card-text>
-        </v-card>
-  
+        </v-card-text>
         <v-btn
           class="mb-8"
           color="blue"
@@ -87,7 +79,7 @@ import router from './router';
 const authStore = useAuthStore()
 const account = ref('')
 const password = ref('')
-
+const visible = ref(false)
 const loginStatus = ref('')
 
 const msg = computed(()=>{

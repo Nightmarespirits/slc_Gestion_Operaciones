@@ -9,7 +9,7 @@
       <v-text-field
         v-model="search"
         density="compact"
-        label="Buscar"
+        label="Buscar responsable"
         prepend-inner-icon="mdi-magnify"
         variant="solo-filled"
         flat
@@ -21,25 +21,23 @@
     <v-divider></v-divider>
 
     <v-data-table
-      v-model="itemSelected"
-      :search="search"   
+      :mobile-breakpoint="600"
+      :search="search"
       :headers="dataHeaders"
       :items="dataItems"
-      :items-per-page="10"    
-      item-value="responsable"
-      hover
+      :items-per-page="10" 
+      :sort-by="[{ key: 'fecha', order: 'desc' }]"
+      :filter-keys="['responsable.apellidos', 'responsable.nombres']"
+      hover      
     >
-      <template v-slot:item.sede="{item}">
-          {{ item.sede.nombre }}
-      </template>
       <template v-slot:item.responsable="{item}">
-        {{ `${item.responsable.apellidos } ${item.responsable.nombres}` }}
+        {{ `${ item?.responsable?.apellidos || '[editar]'} ${item?.responsable?.nombres || '[editar]'}` }}
       </template>
       <template v-slot:item.estado="{ item }">
           <div>
             <v-chip
-              :color="item.estado ? 'green' : 'red'"
-              :text="item.estado ? 'Finalizado' : 'Pendiente'"
+              :color="item?.estado ? 'green' : 'red'"
+              :text="item?.estado ? 'Finalizado' : 'Pendiente'"
               class="text-uppercase"
               size="small"
               label
@@ -56,13 +54,13 @@
           >
           </v-btn>
         
-        <v-btn 
-        variant="plain" 
-        icon="mdi-pencil" 
-        @click="rowSelected(item)"
-        color="success"
-        >  
-        </v-btn>
+          <v-btn 
+          variant="plain" 
+          icon="mdi-pencil" 
+          @click="rowSelected(item)"
+          color="success"
+          >  
+          </v-btn>
       </template>
     </v-data-table>
   </v-card>
@@ -76,7 +74,6 @@ import { defineEmits } from 'vue';
 // Modelo de búsqueda
 const search = ref('');
 const emit = defineEmits(['open-dialog', 'item-selected']);
-const itemSelected = ref([])
 const props = defineProps({
   title: {
     type: String,
@@ -98,7 +95,7 @@ const openDialog = (item) => {
   emit('open-dialog', item);
 };
 
-
+//Metodo para ver en modo edicion el item
 const rowSelected = (item) => {
   emit('item-selected', item);
 

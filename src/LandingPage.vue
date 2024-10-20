@@ -88,7 +88,7 @@
     const items = [
       'Productos',
       'Servicios',
-      'Acerca De',
+      'Acerca de Nosotros',
       'Contacto',
     ]
     const openLogin = () => {
