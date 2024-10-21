@@ -13,158 +13,181 @@
         {{ alertMsg }}
         </v-alert>
         <v-data-table
-            :headers="tableHeaders"
-            :items="maquinas"
-            :sort-by="[{ key: 'nombre', order: 'asc' }]"
-            hide-default-footer
-            hover
+        :headers="tableHeaders"
+        :items="maquinas"
+        :sort-by="[{ key: 'nombre', order: 'asc' }]"
+        hide-default-footer
+        hover
         >
-            <template v-slot:top>
-            <v-toolbar
-                flat
+        <template v-slot:top>
+        <v-toolbar
+            flat
+        >
+            <v-toolbar-title>Speed Wash maquinas </v-toolbar-title>
+            <v-divider
+            class="mx-4"
+            inset
+            vertical
+            ></v-divider>
+            <v-spacer></v-spacer>
+            
+            <!--Edit Dialog-->
+            <v-dialog
+            v-model="dialog"
+            max-width="500px"
             >
-                <v-toolbar-title>Speed Wash maquinas </v-toolbar-title>
-                <v-divider
-                class="mx-4"
-                inset
-                vertical
-                ></v-divider>
-                <v-spacer></v-spacer>
-                
-                <!--Edit Dialog-->
-                <v-dialog
-                v-model="dialog"
-                max-width="500px"
-                >
-                <template v-slot:activator="{ props }">
-                    <v-btn
-                    class="mb-2"
-                    color="primary"
-                    dark
-                    v-bind="props"
-                    >
-                    Agregar
-                    </v-btn>
-                </template>
-                <v-card>
-                    <v-card-title>
-                    <span class="text-h5">{{ formTitle }}</span>
-                    </v-card-title>
-
-                    <v-card-text>
-                    <v-container>
-                        <v-row>
-                        <v-col
-                            cols="12"
-                            md="4"
-                            sm="6"
-                        >
-                            <v-text-field
-                            v-model="editedMaquina.nombre"
-                            label="Nombre"
-                            ></v-text-field>
-                        </v-col>
-                        <v-col
-                            cols="12"
-                            md="4"
-                            sm="6"
-                        >
-                            <v-text-field
-                            v-model="editedMaquina.tipo"
-                            label="Tipo"
-                            ></v-text-field>
-                        </v-col>
-                        <v-col
-                            cols="12"
-                            md="4"
-                            sm="6"
-                        >
-                            <v-text-field
-                            v-model="editedMaquina.modelo"
-                            label="Modelo"
-                            ></v-text-field>
-                        </v-col>
-                        <v-col
-                            cols="12"
-                            md="4"
-                            sm="6"
-                        >
-                            <v-text-field
-                            v-model="editedMaquina.marca"
-                            label="Marca"
-                            ></v-text-field>
-                            <v-text-field
-                            v-model="editedMaquina.codigoFabrica"
-                            label="Codigo de Fabrica"
-                            ></v-text-field>
-                            <v-text-field
-                            v-model="editedMaquina.sede"
-                            label="Sedes"
-                            ></v-text-field>
-                        </v-col>
-                        
-                        </v-row>
-                    </v-container>
-                    </v-card-text>
-
-                    <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        color="blue-darken-1"
-                        variant="text"
-                        @click="closeDialog"
-                    >
-                        Cancelar
-                    </v-btn>
-                    <v-btn
-                        color="blue-darken-1"
-                        variant="text"
-                        @click="saveOrUpdate"
-                    >
-                        Guardar
-                    </v-btn>
-                    </v-card-actions>
-                </v-card>
-                </v-dialog>
-                <!--Fin del Edit Dialog-->
-                <v-dialog v-model="dialogDelete" max-width="500px">
-                <v-card>
-                    <v-card-title class="text-h5">Seguro que desea eliminar este item?</v-card-title>
-                    <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue-darken-1" variant="text" @click="closeDeleteDialog">Cancelar</v-btn>
-                    <v-btn color="blue-darken-1" variant="text" @click="doDeleteItem">OK</v-btn>
-                    <v-spacer></v-spacer>
-                    </v-card-actions>
-                </v-card>
-                </v-dialog>
-            </v-toolbar>
-            </template>
-            <template v-slot:item.actions="{ item }">
-                <v-btn 
-                variant="plain" 
-                icon="mdi-pencil" 
-                @click="editItem(item)"
-                color="success"
-                >  
-                </v-btn>
-                
-                <v-btn 
-                variant="plain" 
-                icon="mdi-delete" 
-                @click="deleteItem(item)"
-                color="red"
-                >  
-                </v-btn>
-            </template>
-            <template v-slot:no-data>
-            <v-btn
+            <template v-slot:activator="{ props }">
+                <v-btn
+                class="mb-2"
                 color="primary"
-                @click="initializeTable"
-            >
-                Reset
-            </v-btn>
+                dark
+                v-bind="props"
+                >
+                Agregar
+                </v-btn>
             </template>
+            <v-card>
+                <v-card-title>
+                <span class="text-h5">{{ formTitle }}</span>
+                </v-card-title>
+
+                <v-card-text>
+                <v-container>
+                    <v-row>
+                    <v-col
+                    cols="12"
+                    md="4"
+                    sm="6"
+                    >
+                    <v-text-field
+                    v-model="editedMaquina.nombre"
+                    label="Nombre"
+                    ></v-text-field>
+                    </v-col>
+
+                    <v-col
+                    cols="12"
+                    md="4"
+                    sm="6"
+                    >
+                    <v-text-field
+                    v-model="editedMaquina.tipo"
+                    label="Tipo"
+                    ></v-text-field>
+                    </v-col>
+
+                    <v-col
+                    cols="12"
+                    md="4"
+                    sm="6"
+                    >
+                    <v-text-field
+                    v-model="editedMaquina.modelo"
+                    label="Modelo"
+                    ></v-text-field>
+                    </v-col>
+
+                    <v-col
+                    cols="12"
+                    md="4"
+                    sm="6"
+                    >
+                        <v-text-field
+                        v-model="editedMaquina.marca"
+                        label="Marca"
+                        ></v-text-field>
+                    </v-col>
+
+                    <v-col
+                    cols="12"
+                    md="4"
+                    sm="6"
+                    >
+                        <v-text-field
+                        v-model="editedMaquina.codigoFabrica"
+                        label="Codigo de Fabrica"
+                        ></v-text-field>
+                    </v-col>
+
+                    <v-col
+                    cols="12"
+                    md="4"
+                    sm="6"
+                    >
+                    <v-select 
+                    v-model="editedMaquina.sede" 
+                    label="Sedes"
+                    :items="sedeItems" 
+                    item-value="_id"
+                    item-title="nombre"
+                    return-object
+                    >
+
+                    </v-select>
+                    </v-col>
+                    
+                    </v-row>
+                </v-container>
+                </v-card-text>
+
+                <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                    color="blue-darken-1"
+                    variant="text"
+                    @click="closeDialog"
+                >
+                    Cancelar
+                </v-btn>
+                <v-btn
+                    color="blue-darken-1"
+                    variant="text"
+                    @click="saveOrUpdate"
+                >
+                    Guardar
+                </v-btn>
+                </v-card-actions>
+            </v-card>
+            </v-dialog>
+            <!--Fin del Edit Dialog-->
+            <v-dialog v-model="dialogDelete" max-width="500px">
+            <v-card>
+                <v-card-title class="text-h5">Seguro que desea eliminar este item?</v-card-title>
+                <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue-darken-1" variant="text" @click="closeDeleteDialog">Cancelar</v-btn>
+                <v-btn color="blue-darken-1" variant="text" @click="doDeleteItem">OK</v-btn>
+                <v-spacer></v-spacer>
+                </v-card-actions>
+            </v-card>
+            </v-dialog>
+        </v-toolbar>
+        </template>
+        <template v-slot:item.actions="{ item }">
+            <v-btn 
+            variant="plain" 
+            icon="mdi-pencil" 
+            @click="editItem(item)"
+            color="success"
+            >  
+            </v-btn>
+            
+            <v-btn 
+            variant="plain" 
+            icon="mdi-delete" 
+            @click="deleteItem(item)"
+            color="red"
+            >  
+            </v-btn>
+        </template>
+        <template v-slot:no-data>
+        <v-btn
+            color="primary"
+            @click="initializeTable"
+        >
+            Reset
+        </v-btn>
+        </template>
         </v-data-table>
     </v-container>
 </template>
@@ -178,15 +201,15 @@ const dialogDelete = ref(false)
 const alert = ref(false)
 const alertMsg = ref('')
 const tableHeaders = ref([
-    
     { title: 'Nombre', align: 'start', sortable: false, key: 'nombre' },
     { title: 'Tipo', key: 'tipo' },
     { title: 'Modelo', key: 'modelo' },
     { title: 'Marca', key: 'marca' },
     { title: 'COD Fabrica', key: 'codigoFabrica' },
-    { title: 'Sede', key: 'sede'},
+    { title: 'Sede', key: 'sede.nombre'},
     { title: 'Actions', key: 'actions', sortable: false },
 ])
+const sedeItems = ref([])
 const maquinas = ref([])
 const editedIndexMaquina = ref(-1)
 const editedMaquina = ref({
@@ -195,7 +218,7 @@ const editedMaquina = ref({
     modelo: '',
     marca: '',
     codigoFabrica: '',
-    sede: ''
+    sede: {}
 })
 const defaultSede = ref({
     nombre: '',
@@ -203,7 +226,7 @@ const defaultSede = ref({
     modelo: '',
     marca: '',
     codigoFabrica: '',
-    sede: ''
+    sede: {}
 })
 
 const formTitle = computed(()=>{
@@ -227,6 +250,7 @@ const initializeTable = async () => {
     try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/maquina`)
         maquinas.value = response.data
+        console.log(maquinas.value)
     } catch (error) {
         console.error('Error al cargar Maquina:', error);
     }
@@ -287,7 +311,17 @@ const saveOrUpdate = async () => {
     initializeTable()
     closeDialog()
 }
-
+const cargarSedes = async () => {
+    try {
+    	const response = await axios.get( `${import.meta.env.VITE_API_URL}/sede`);
+        sedeItems.value = response.data;
+    } catch (error) {
+        console.error('Error al cargar Sedes:', error);
+    }
+};
+onMounted(() => {
+    cargarSedes();
+})
 const activeAlert = (msg) => {
     alertMsg.value = msg
     alert.value = true

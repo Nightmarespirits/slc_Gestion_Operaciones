@@ -5,8 +5,8 @@
       </v-app-bar-nav-icon>
       <v-toolbar-title>Speed Wash S.A.</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn to="/home" text>Inicio</v-btn>
-      <v-btn to="/about" text>Acerca De</v-btn>
+      <v-btn to="/app/home" text>Inicio</v-btn>
+      <v-btn to="/app/about" text>Acerca De</v-btn>
       <v-menu
         transition="scale-transition"
       >
@@ -20,7 +20,7 @@
         </template>
 
         <v-list>
-          <v-list-item title="Configuracion" to="/configuracion" value="configuracion"></v-list-item>
+          <v-list-item title="Configuracion" to="/app/configuracion" value="configuracion"></v-list-item>
           <v-list-item title="Cerrar Sesion" @click="logout" ></v-list-item>
         </v-list>
 

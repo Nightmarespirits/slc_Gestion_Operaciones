@@ -78,13 +78,16 @@
         </v-container>
       </v-main>
     </v-layout>
+    <p>{{ apiStateMsg }}</p>
   </template>
   
   <script setup>
-    import { shallowRef } from 'vue'
+    import { onMounted, shallowRef, ref } from 'vue'
     import router from './router';
+    import axios from 'axios';
     const drawer = shallowRef(false)
-  
+    const apiStateMsg = ref('')
+    
     const items = [
       'Productos',
       'Servicios',
@@ -94,6 +97,10 @@
     const openLogin = () => {
         router.push('/login')
     }
+    onMounted(async ()=>{
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}`)
+      apiStateMsg.value = response.data
+    })
   </script>
   
   <style scoped>

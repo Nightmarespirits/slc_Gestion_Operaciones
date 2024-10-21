@@ -153,19 +153,20 @@ const breadcumbItems = ref([
     {
     title: 'Dashboard',
     disabled: false,
-    href: '/',
+    href: '/app/home',
     },
     {
     title: 'Operaciones',
     disabled: false,
-    href: '/operaciones',
+    href: '/app/operaciones',
     },
     {
-    title: 'Lavado',
+    title: 'Planchado',
     disabled: true,
-    href: '/lavado',
+    href: '/app/planchado',
     }
 ])
+ 
  
 const selectedItem = ref(null)
 

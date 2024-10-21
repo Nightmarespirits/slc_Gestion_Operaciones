@@ -9,12 +9,6 @@ const router = createRouter({
             component: () => import('../LandingPage.vue')
         },
         {
-            path: '/home',
-            name: 'Home',
-            component: () => import('../views/home.vue'),
-            meta:{requiresAuth: false, planes: ['basic', 'pro']}
-        },
-        {
             path: '/login',
             name: 'Login',
             component: () => import('../Login.vue'),
@@ -27,61 +21,85 @@ const router = createRouter({
             meta:{requiresAuth: false}
         },
         {
-            path: '/lavado',
-            name: 'Lavado',
-            component: () => import('../views/procesosPages/lavado.vue'),
-            meta:{requiresAuth: true, planes: ['basic', 'pro']}
-        },
-        {
-            path: '/secado',
-            name: 'Secado',
-            component: () => import('../views/procesosPages/secado.vue'),
-            meta:{requiresAuth: true, planes: ['basic', 'pro']}
-        },
-        {
-            path: '/planchado',
-            name: 'Planchado',
-            component: () => import('../views/procesosPages/planchado.vue'),
-            meta:{requiresAuth: true, planes: ['basic', 'pro']}
-        },
-        {
-            path: '/doblado',
-            name: 'Doblado',
-            component: () => import('../views/procesosPages/doblado.vue'),
-            meta:{requiresAuth: true, planes: ['basic', 'pro']}
-        },
-        {
-            path:'/configuracion',
-            name: 'Configuracion',
-            component: () => import('../views/configuracion.vue'),
-            children:[
+            path: '/app',
+            component: () => import('../layouts/MainLayout.vue'),
+            children: [
                 {
-                    path:'',
-                    name: 'Perfil',
-                    component: () => import ('../views/configPages/perfil.vue')
+                    path: 'home',
+                    name: 'Home',
+                    component: () => import('../views/home.vue'),
+                    meta:{requiresAuth: false, planes: ['basic', 'pro']}
                 },
-                {   
-                    path:'locales',
-                    name: 'Local',
-                    component: () => import('../views/configPages/local.vue')
+                {
+                    path: 'lavado',
+                    name: 'Lavado',
+                    component: () => import('../views/procesosPages/lavado.vue'),
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
                 },
-                {   
-                    path:'empleados',
-                    name: 'Empleado',
-                    component: () => import('../views/configPages/empleado.vue')
+                {
+                    path: 'secado',
+                    name: 'Secado',
+                    component: () => import('../views/procesosPages/secado.vue'),
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
                 },
-                {   
-                    path:'maquinas',
-                    name: 'Maquinas',
-                    component: () => import('../views/configPages/maquinas.vue')
+                {
+                    path: 'planchado',
+                    name: 'Planchado',
+                    component: () => import('../views/procesosPages/planchado.vue'),
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
                 },
-            ],
-            meta:{requiresAuth: true, planes: ['basic', 'pro']}
+                {
+                    path: 'doblado',
+                    name: 'Doblado',
+                    component: () => import('../views/procesosPages/doblado.vue'),
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
+                },
+                {
+                    path:'configuracion',
+                    name: 'Configuracion',
+                    component: () => import('../views/configuracion.vue'),
+                    children:[
+                        {
+                            path:'',
+                            name: 'Perfil',
+                            component: () => import ('../views/configPages/perfil.vue')
+                        },
+                        {   
+                            path:'locales',
+                            name: 'Local',
+                            component: () => import('../views/configPages/local.vue')
+                        },
+                        {   
+                            path:'empleados',
+                            name: 'Empleado',
+                            component: () => import('../views/configPages/empleado.vue')
+                        },
+                        {   
+                            path:'maquinas',
+                            name: 'Maquinas',
+                            component: () => import('../views/configPages/maquinas.vue')
+                        },
+                    ],
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
+                },
+                {
+                    path: 'procesos',
+                    name: 'Procesos',
+                    component: () => import('../views/operacionesFinalizadas.vue'),
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
+                },
+                {
+                    path: 'about',
+                    name: 'About',
+                    component: () => import('../views/about.vue'),
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
+                }
+            ]
         },
         {
             path: '/:catchAll(.*)',  // Esta es la ruta comodín
             name: 'NotFound',
-            component: () => import('../views/notFound.vue'),  // Página 404 personalizada
+            component: () => import('../views/notFound.vue'),  //Página 404 personalizada
             meta: { requiresAuth: false }
         }
     ]

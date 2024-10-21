@@ -61,7 +61,7 @@
         <v-card-text class="text-center">
           <a
             class="text-blue text-decoration-none"
-            href="/register"
+            href="/app/register"
             rel="noopener noreferrer"
           >
             Registrarse <v-icon icon="mdi-chevron-right"></v-icon>
@@ -92,7 +92,7 @@ const handleLogin = async () => {
   const loggedIn = await authStore.login(account.value, password.value)
 
   if(loggedIn){
-    router.push('/home')
+    router.push('/app/home')
     loginStatus.value = true
   }else{
     loginStatus.value = false
