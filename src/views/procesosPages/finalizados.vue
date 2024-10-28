@@ -4,7 +4,7 @@
             <v-icon icon="mdi-home" size="small"></v-icon>
         </template>
     </v-breadcrumbs>
-    <p class="text-h4 pl-8 mt-2">Proceso de {{title }}</p>
+    <p class="text-h4 pl-8 mt-2"> Proceso {{title}}</p>
     <!--Contenido de la pagina-->
     <v-container>
         <!--Alert-->
@@ -18,14 +18,6 @@
         >
         {{ alertMsg }}
         </v-alert>
-
-        <!--formulario-->
-        <FormComponent 
-        @showAlert="activeAlert"
-        @onRegAdded="cargarRegistros"
-        :tipoProceso="title"
-        :selectedItem="selectedItem"
-        ></FormComponent>
 
         <!--Dialog Component-->
         <v-dialog
@@ -179,10 +171,9 @@
 import { onMounted, ref } from 'vue'
 import axios from 'axios';
 import TableDataComponent from '../../components/proceso/TableDataComponent.vue';
-import FormComponent from '../../components/proceso/FormComponent.vue';
 import { mergeTableData } from '../../utils/mergeTableData.js';
 
-const title = ref('Secado')
+const title = ref('Finalizado')
 //Breadcumb
 const breadcumbItems = ref([
     {
@@ -196,7 +187,7 @@ const breadcumbItems = ref([
     to: '/app/operaciones',
     },
     {
-    title: 'Secado',
+    title: `${title.value}`,
     disabled: true,
     to: `/app/${title.value}`,
     }
@@ -235,10 +226,10 @@ const doDeleteItem = async () => {
         confirmDialog.value = false;
         cargarRegistros()
         activeAlert(response.data.message)
+
     } catch (error) {
         console.error('Error al intentar eliminar datos:', error);
     }
-    
 }
 //Datos para el modo ver Registro de proceso
 const operacionID = ref('')
@@ -282,12 +273,8 @@ const evalColor = color => {
 
 const cargarRegistros = async () => {
     try {
-        const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos/filter`, {
-            params: {
-                tipo: title.value.toLowerCase()
-            }
-        })
-        dataItems.value = response.data || []
+        const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos/status/?estado=true`)
+        dataItems.value = response.data
     } catch (error) {
         console.error("Error al Cargar los datos de Registros" + error)
     }

@@ -32,17 +32,7 @@
                         {{ btnSaveOrUpdateForm }}
                         </v-btn>
                     </v-col>
-
-                    <!-- Switch Seguimiento de Ciclo -->
-                    <v-col
-                    cols="12" sm="4" md="3" 
-                    class="d-flex justify-center mb-0">
-                    <v-switch 
-                        v-model="isSequential"
-                        :color="isSequential ? 'green' : ''"
-                        :label="isSequential ? 'Seguimiento de Proceso' : 'Sin Seguimiento' "
-                        ></v-switch>
-                    </v-col>
+                    
             </v-row>
             
             <v-row v-if="editionMode" class="align-center">
@@ -55,7 +45,6 @@
                     variant="flat" 
                     class="ma-1" 
                     size="small" 
-                    :color="evalColor(detail?.colorMarcado || '')"
                     label>
                     <v-icon icon="mdi-label" start></v-icon>
                     {{detail.numOrden }}
@@ -70,7 +59,6 @@
                     v-model="sede.value.value"
                     :error-messages="sede.errorMessage.value" 
                     :items="sedeItems" 
-                    @update:modelValue="cargarMaquinas"
                     item-value="_id"
                     item-title="nombre"
                     label="Sede" 
@@ -126,18 +114,7 @@
                                 :error-messages="numOrden.errorMessage.value" 
                                 />
                             </v-col>
-                            
-                            <v-col cols="12" sm="6" md="2">
-                                <v-select 
-                                label="Maquina" 
-                                v-model="maquina.value.value" 
-                                :error-messages="maquina.errorMessage.value" 
-                                :items="maquinaItems" 
-                                item-value="_id"
-                                item-title="nombre"
-                                return-object
-                                />
-                            </v-col>
+
                             
                             <v-col cols="12" sm="6" md="2">
                                 <v-text-field 
@@ -147,18 +124,6 @@
                                 :error-messages="cantidad.errorMessage.value" 
                                 />
                             </v-col>
-                            
-                            <v-col cols="12" sm="6" md="2">
-                                <v-select 
-                                label="Identificador" 
-                                v-model="colorMarcado.value.value" 
-                                :error-messages="colorMarcado.errorMessage.value" 
-                                :items="colorItems" 
-                                item-value="value" 
-                                item-title="text" 
-                                />
-                            </v-col>
-                            
                             <v-col cols="12" sm="6" md="2">
                                 <v-text-field 
                                 label="Observaciones" 
@@ -169,16 +134,14 @@
                             </v-col>
                             
                             <v-col cols="12" sm="6" md="2">
-                                <v-btn @click.stop="appendOrUptdateDetails">{{detailBtnAppendOrUpdate}}</v-btn>
+                                <v-btn @click="appendOrUptdateDetails">{{detailBtnAppendOrUpdate}}</v-btn>
                             </v-col>
                         </v-row>
                         <v-table hover>
                             <thead>
                             <tr>
                                 <th class="text-center">N° ORDEN</th>
-                                <th class="text-center">MAQUINA</th>
                                 <th class="text-center">CONTEO</th>
-                                <th class="text-center">IDENTIFICADOR</th>
                                 <th class="text-center">OBSERVACIONES</th>
                                 <th class="text-center">ACCIONES</th>
                             </tr>
@@ -186,13 +149,7 @@
                             <tbody>
                             <tr v-for="(item) in details" :key="item.numOrden">
                                 <td class="text-center">{{ item?.numOrden || '[Sin agregar]'}}</td>
-                                <td class="text-center">{{ item?.maquina?.nombre || '[Sin Agregar]' }}</td>
                                 <td class="text-center">{{ item?.cantidad || '[Sin Agregar]' }}</td>
-                                <td class="text-center">
-                                <v-chip :color="evalColor(item?.colorMarcado || '[Sin Agregar]')" class="text-lowercase" size="large" label>
-                                    {{ item.colorMarcado || '[Sin Agregar]'}}
-                                </v-chip>
-                                </td>
                                 <td class="text-center">{{ item?.obs || '[Sin Agregar]' }}</td>
                                 <td class="text-center">
                                 <v-btn variant="plain" icon="mdi-pencil" @click="fillDetail(item)" color="blue-darken-1"></v-btn>
@@ -219,7 +176,6 @@ import { ref , defineProps, defineEmits, onMounted, computed, watch, nextTick} f
 import { useField, useForm } from 'vee-validate';
 import axios from 'axios';
 import { useDisplay } from 'vuetify';
-import { evalColor } from '../../utils/evalColor';
 
 const { xs } = useDisplay();
 const isMobile = computed(() => xs.value);
@@ -239,7 +195,7 @@ const props = defineProps({
 const emit = defineEmits(['showAlert', 'onRegAdded'])
 
 //Validador general
-const {handleSubmit, resetForm} = useForm({
+const {handleSubmit} = useForm({
     validationSchema: {
         local(value) {
         if (value) return true
@@ -254,16 +210,6 @@ const {handleSubmit, resetForm} = useForm({
         numOrden (value) {
         if (/^[0-9-]{6,}$/.test(value)) return true
         return 'El Numero de orden debe  ser como minimo 6 digitos'
-        },
-        maquina(value) {
-        if (value) return true
-
-        return 'Seleccione Maquina'
-        },
-        colorMarcado(value) {
-        if (value) return true
-
-        return 'Seleccione Un identificador'
         },
         cantidad (value) {
         if (/^[0-9]+$/.test(value)) return true
@@ -281,8 +227,6 @@ const {handleSubmit, resetForm} = useForm({
 const title = props.tipoProceso
 const sedeItems = ref([])
 const responsableItems = ref([])
-const maquinaItems = ref([])
-const colorItems = ref(['Rojo', 'Verde', 'Azul', 'Amarillo'])
 const dialog = ref(false)
 const details = ref([])
 
@@ -293,9 +237,7 @@ const responsable = useField('responsable')
 const estado = ref(false)
 
 const numOrden = useField('numOrden')
-const maquina = useField('maquina')
 const cantidad = useField('cantidad')
-const colorMarcado = useField('colorMarcado')
 const obs = useField('obs')
 
 //Usages Booleans for details screen form
@@ -304,6 +246,10 @@ const detailIsEditing = ref(false) // Verificar si estamos en modo edición
 const detailBtnAppendOrUpdate = ref('Agregar'); // Texto dinámico del botón de detalles del dialogo
 
 //Usage booleans for all Form
+/**Importante
+ * Para el proceso de doblado es nesesario que la variable @isSequential este activa (true)
+ * para que pueda continuar el ciclo y finalizar la operacion
+ */
 const isSequential = ref(true);
 const editionMode = ref(false)
 const btnAddDetalles = ref('Agregar Detalles')
@@ -337,14 +283,6 @@ watch(() => details.value,
 },
 { deep: true, immediate: true });
 
-//Observar el cambio de el valor id del select sede
-// Observa cambios en `sede.value.value` y ejecuta `cargarMaquinas` cuando cambia
-watch(() => sede.value.value, async (newValue) => {
-    if (newValue !== null) {
-    await cargarMaquinas(newValue);
-    }
-},
-{ deep: true});
 
 //Control de DialogoDetails (fullScreen)
 const canOpenDialog = () => {
@@ -363,9 +301,7 @@ const openDialogDetails = () => {
 const fillDetail = (item) => {
   // Rellenar los campos del formulario con los datos del item seleccionado
   numOrden.value.value = item.numOrden;
-  maquina.value.value = item.maquina;
   cantidad.value.value = item.cantidad;
-  colorMarcado.value.value = item.colorMarcado;
   obs.value.value = item.obs;
   detailEditingId.value = item?.id ?? item?._id ?? 'no hallado' ; // Guardar el índice del item en edición
   detailIsEditing.value = true
@@ -376,28 +312,21 @@ const fillDetail = (item) => {
 const appendOrUptdateDetails = handleSubmit((values) => {
     if(detailIsEditing.value){
         updateDetail(values);
-    }else{
-        appendDetail(values)
+        return;
     }
+    appendDetail(values)
 })
-
 const appendDetail = (values) => {
   const detail = {
     id: detailIsEditing.value ? detailEditingId.value : details.value.length + 1,
     numOrden: values.numOrden,
-    maquina: {
-      _id: values.maquina._id,
-      nombre: values.maquina.nombre,
-    },
     cantidad: values.cantidad,
-    colorMarcado: values.colorMarcado,
     obs: values.obs,
   };
   details.value.unshift(detail);
 
   limpiarCamposDetails(); // Limpiar los campos después de agregar o actualizar
 };
-
 
 const updateDetail = (values) => {
     const index = details.value.findIndex(obj => (obj?.id ?? obj?._id ?? '') === detailEditingId.value);
@@ -409,12 +338,7 @@ const updateDetail = (values) => {
     updatedDetails[index] = {
         id: detailEditingId.value,
         numOrden: values.numOrden,
-        maquina: {
-            _id: values.maquina._id,
-            nombre: values.maquina.nombre,
-        },
         cantidad: values.cantidad,
-        colorMarcado: values.colorMarcado,
         obs: values.obs,
     };
     
@@ -428,13 +352,11 @@ const updateDetail = (values) => {
 
 const limpiarCamposDetails = () => {
   numOrden.value.value = '';
-  maquina.value.value = '';
   cantidad.value.value = '';
-  colorMarcado.value.value = '';
   obs.value.value = '';
   detailEditingId.value = null; // Resetear el índice de edición
   detailIsEditing.value = false
-  detailBtnAppendOrUpdate.value = 'Agregar'; // Restaurar el texto del botón
+  detailBtnAppendOrUpdate.value = 'Agregar Detalles'; // Restaurar el texto del botón
 };
 
 const deleteDetail = (item) => {
@@ -512,41 +434,26 @@ const cargarResponsables = async () => {
 	
 };
 
-const cargarMaquinas = async (sedeID) => {
-    try {
-        let tipoMaquina = ''
-        switch (title) {
-            case 'Lavado':
-                tipoMaquina = 'Lavadora'
-                break;
-            case 'Secado':
-                tipoMaquina = 'Secadora'
-                break;
-            case 'Planchado':
-                tipoMaquina = 'Plancha'
-                break;
-            default:
-                break;
-        }
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/maquina/filter`, {
-            params:{
-                sede: sedeID,
-                tipo: tipoMaquina
-            }
-        })
-
-        maquinaItems.value = response.data
-    } catch (error) {
-        console.error('Error al cargar locales:', error);
-    }
-}
-
 onMounted(()=>{
     cargarSedes()
     cargarResponsables()
 })
 
 //Otras funciones
+const evalColor = color => {
+    switch (color.toLowerCase()) {
+        case 'rojo':
+            return 'red';
+        case 'verde':
+            return 'green'
+        case 'azul':
+            return 'blue'
+        case 'amarillo':
+            return 'yellow'
+        default:
+            break;
+    }
+}
 const cleanForm = () => {
     editionMode.value = false
     sede.value.value = '';
@@ -554,9 +461,7 @@ const cleanForm = () => {
     estado.value = false;
     details.value = [] ;
     numOrden.value.value = ''
-    maquina.value.value = ''
     cantidad.value.value = ''
-    colorMarcado.value.value = ''
     obs.value.value = ''
     btnSaveOrUpdateForm.value = 'Guardar'
     detailIsEditing.value = false
@@ -565,9 +470,7 @@ const cleanForm = () => {
 }
 const cleanDetailsForm = () => {
     numOrden.value.value = ''
-    maquina.value.value = ''
     cantidad.value.value = ''
-    colorMarcado.value.value = ''
     obs.value.value = ''
     detailIsEditing.value = false
     detailBtnAppendOrUpdate.value = 'Agregar'

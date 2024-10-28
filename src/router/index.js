@@ -55,6 +55,24 @@ const router = createRouter({
                     meta:{requiresAuth: true, planes: ['basic', 'pro']}
                 },
                 {
+                    path: 'tenido',
+                    name: 'Tenido',
+                    component: () => import('../views/procesosPages/tenido.vue'),
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
+                },
+                {
+                    path: 'finalizado',
+                    name: 'finalizado',
+                    component: () => import('../views/procesosPages/finalizados.vue'),
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
+                },
+                {
+                    path: 'operaciones',
+                    name: 'operaciones',
+                    component: () => import('../views/operaciones.vue'),
+                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
+                },
+                {
                     path:'configuracion',
                     name: 'Configuracion',
                     component: () => import('../views/configuracion.vue'),
@@ -80,18 +98,6 @@ const router = createRouter({
                             component: () => import('../views/configPages/maquinas.vue')
                         },
                     ],
-                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
-                },
-                {
-                    path: 'procesos',
-                    name: 'Procesos',
-                    component: () => import('../views/operacionesFinalizadas.vue'),
-                    meta:{requiresAuth: true, planes: ['basic', 'pro']}
-                },
-                {
-                    path: 'about',
-                    name: 'About',
-                    component: () => import('../views/about.vue'),
                     meta:{requiresAuth: true, planes: ['basic', 'pro']}
                 }
             ]

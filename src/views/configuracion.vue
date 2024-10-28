@@ -9,7 +9,7 @@
         </v-breadcrumbs>
   
         <!-- Contenido principal -->
-        <v-container class="mt-0 pt-0">
+        <v-container class="mt-0 pt-0 content-container">
           <router-view />
         </v-container>
       </v-container>
@@ -40,11 +40,6 @@
           <v-icon>mdi-amplifier</v-icon>
           <span>Máquinas</span>
         </v-btn>
-  
-        <v-btn to="/app/configuracion/mas" value="mas">
-          <v-icon>mdi-tools</v-icon>
-          Más
-        </v-btn>
       </v-bottom-navigation>
     </v-app>
   </template>
@@ -58,17 +53,17 @@ const breadcumbItems = ref([
   {
     title: 'Dashboard',
     disabled: false,
-    href: '/app/home',
+    to: '/app/home',
   },
   {
     title: 'Cuenta',
     disabled: false,
-    href: '/app/cuenta',
+    to: '/app/cuenta',
   },
   {
     title: 'Configuración',
     disabled: true,
-    href: '/app/configuracion',
+    to: '/app/configuracion',
   },
 ]);
 </script>

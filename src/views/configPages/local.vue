@@ -84,16 +84,6 @@
                             label="Telefono"
                             ></v-text-field>
                         </v-col>
-                        <v-col
-                            cols="12"
-                            md="4"
-                            sm="6"
-                        >
-                            <v-text-field
-                            v-model="editedSede.maquinas"
-                            label="Maquinas"
-                            ></v-text-field>
-                        </v-col>
                         
                         </v-row>
                     </v-container>
@@ -154,7 +144,7 @@
                 color="primary"
                 @click="initializeTable"
             >
-                Reset
+                Actualizar
             </v-btn>
             </template>
         </v-data-table>
@@ -173,7 +163,6 @@ const tableHeaders = ref([
     {title: 'Nombre', align: 'start', sortable: false, key: 'nombre' },
     { title: 'Direcccion', key: 'direccion' },
     { title: 'Telefono', key: 'telefono' },
-    { title: 'Maquinas', key: 'maquinas' },
     { title: 'Actions', key: 'actions', sortable: false },
 ])
 const sedes = ref([])
@@ -181,14 +170,12 @@ const editedIndexSede = ref(-1)
 const editedSede = ref({
     nombre: '',
     direccion: '',
-    telefono: '',
-    maquinas: []
+    telefono: ''
 })
 const defaultSede = ref({
     nombre: '',
     direccion: '',
-    telefono: '',
-    maquinas: []
+    telefono: ''
 })
 
 const formTitle = computed(()=>{

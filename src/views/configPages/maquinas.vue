@@ -1,6 +1,6 @@
 <template>
     <v-container class="mt-0 pt-0">
-        <h2 class="mb-2">Configurar Locales</h2>
+        <h2 class="mb-2">Configurar Maquinas</h2>
         <!--Alert-->
         <v-alert
         v-model="alert"
@@ -70,10 +70,11 @@
                     md="4"
                     sm="6"
                     >
-                    <v-text-field
+                    <v-select
                     v-model="editedMaquina.tipo"
+                    :items="['Lavadora', 'Secadora', 'Plancha']"
                     label="Tipo"
-                    ></v-text-field>
+                    ></v-select>
                     </v-col>
 
                     <v-col
@@ -84,6 +85,7 @@
                     <v-text-field
                     v-model="editedMaquina.modelo"
                     label="Modelo"
+                    placeholder="opcional"
                     ></v-text-field>
                     </v-col>
 
@@ -250,7 +252,6 @@ const initializeTable = async () => {
     try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/maquina`)
         maquinas.value = response.data
-        console.log(maquinas.value)
     } catch (error) {
         console.error('Error al cargar Maquina:', error);
     }

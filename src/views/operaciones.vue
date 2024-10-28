@@ -4,7 +4,7 @@
             <v-icon icon="mdi-home" size="small"></v-icon>
         </template>
     </v-breadcrumbs>
-    <p class="text-h4 pl-8 mt-2">Proceso de {{title }}</p>
+    <p class="text-h4 pl-8 mt-2"> Todas las Operaciones</p>
     <!--Contenido de la pagina-->
     <v-container>
         <!--Alert-->
@@ -18,14 +18,6 @@
         >
         {{ alertMsg }}
         </v-alert>
-
-        <!--formulario-->
-        <FormComponent 
-        @showAlert="activeAlert"
-        @onRegAdded="cargarRegistros"
-        :tipoProceso="title"
-        :selectedItem="selectedItem"
-        ></FormComponent>
 
         <!--Dialog Component-->
         <v-dialog
@@ -161,14 +153,57 @@
         <!--Fin del Confirm Dialog COMPONENT-->
 
         <!--Tabla Procesos-->
-        <TableDataComponent
-        @onFullscreenItem="showDetails" 
-        @onEditItem="handleItemSelected"
-        @onDeleteItem="openConfirmDialog"
-        :title="title" 
-        :dataHeaders="dataHeaders" 
-        :dataItems="dataItems">
-        </TableDataComponent>
+        <v-data-table
+        :headers="dataHeaders"
+        :items="dataItems"
+        :items-per-page="10"
+        :sort-by="[{ key: 'createdAt', order: 'desc' }]"
+        :mobile="isMovil"
+        hover
+        >
+            <template #item.ordenes="{item}">
+                <v-chip
+                v-for="detalle in item?.procesos[0].detalles"
+                :key="detalle.numOrden"
+                variant="flat"
+                class="ma-1"
+                size="small"
+                label
+                >
+                <template #prepend>
+                <v-icon>mdi-label</v-icon>
+                </template>
+                {{ detalle?.numOrden || '[Editar]'}}
+            </v-chip>
+            </template>
+
+            <template #item.procesos="{item}">
+                <v-chip
+                v-for="proceso in item?.procesos"
+                :key="proceso._id"
+                variant="flat"
+                class="ma-1"
+                size="small"
+                label
+                color="primary"
+                >
+                <template #prepend>
+                <v-icon>mdi-label</v-icon>
+                </template>
+                {{ proceso._id|| '[Editar]'}}
+            </v-chip>
+            </template>
+            <template #item.estadoOperacion="{ item }">
+                <v-chip
+                    :color="item?.estadoOperacion ? 'green' : 'red'"
+                    :text="item?.estadoOperacion ? 'Finalizado' : 'Pendiente'"
+                    class="text-uppercase"
+                    size="small"
+                    label
+                >
+                </v-chip>
+            </template>
+        </v-data-table>
         <!--Fin de la tabla procesos -->
 
     </v-container>
@@ -178,11 +213,10 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios';
-import TableDataComponent from '../../components/proceso/TableDataComponent.vue';
-import FormComponent from '../../components/proceso/FormComponent.vue';
-import { mergeTableData } from '../../utils/mergeTableData.js';
+import TableDataComponent from '../components/proceso/TableDataComponent.vue';
+import { mergeTableData } from '../utils/mergeTableData.js';
 
-const title = ref('Secado')
+const title = ref('Finalizado')
 //Breadcumb
 const breadcumbItems = ref([
     {
@@ -196,7 +230,7 @@ const breadcumbItems = ref([
     to: '/app/operaciones',
     },
     {
-    title: 'Secado',
+    title: `${title.value}`,
     disabled: true,
     to: `/app/${title.value}`,
     }
@@ -214,11 +248,11 @@ const alert = ref(false)
 const alertMsg = ref('')
 const dataItems = ref([])
 const dataHeaders = [
-    { align: 'start', key:'detalles', title: 'N° Orden (Tickets)'},
-    { align: 'center', key: 'fechaYHora', title: 'Fecha y Hora' },
-    { align: 'center', key:'responsable', title: 'Responsable'},
-    { align: 'center', key: 'estado', title: 'Estado' },
-    { align: 'end', key: 'acciones', title: 'Acciones'}
+    { align: 'start', key:'ordenes', title: 'N° Orden (Tickets)'},
+    { align: 'center', key: 'procesos', title: 'Procesos' },
+    { align: 'center', key:'fecInicio', title: 'Fecha de inicio'},
+    { align: 'center', key: 'estadoOperacion', title: 'Estado' },
+    { align: 'end', key: 'mas', title: 'Mas'}
 ]
 
 //del boton editar
@@ -235,10 +269,10 @@ const doDeleteItem = async () => {
         confirmDialog.value = false;
         cargarRegistros()
         activeAlert(response.data.message)
+
     } catch (error) {
         console.error('Error al intentar eliminar datos:', error);
     }
-    
 }
 //Datos para el modo ver Registro de proceso
 const operacionID = ref('')
@@ -282,12 +316,8 @@ const evalColor = color => {
 
 const cargarRegistros = async () => {
     try {
-        const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos/filter`, {
-            params: {
-                tipo: title.value.toLowerCase()
-            }
-        })
-        dataItems.value = response.data || []
+        const response = await axios.get( `${import.meta.env.VITE_API_URL}/operacion`)
+        dataItems.value = response.data
     } catch (error) {
         console.error("Error al Cargar los datos de Registros" + error)
     }
@@ -296,4 +326,3 @@ onMounted(()=>{
     cargarRegistros()
 })
 </script>
-
