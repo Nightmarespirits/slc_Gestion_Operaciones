@@ -20,7 +20,7 @@
   
       <v-divider></v-divider>
       <v-list density="compact" nav>
-        <v-list-item prepend-icon="mdi-home" title="Inicio" to="/app/home" value="home"></v-list-item>
+        <v-list-item prepend-icon="mdi-home" title="Inicio" to="/app" value="home"></v-list-item>
         <v-list-item prepend-icon="mdi-shape-circle-plus" title="Nueva Operacion" to="/app/proceso/lavado" value="lavado"></v-list-item>
         <v-list-item prepend-icon="mdi-cogs" title="Todas las Operaciones" to="/app/operaciones" value="todas"></v-list-item>
         <v-list-item prepend-icon="mdi-check-circle-outline" title="Operaciones Finalizadas" to="/app/operaciones/finalizadas" value="finalizadas"></v-list-item>

@@ -5,7 +5,7 @@
       </v-app-bar-nav-icon>
       <v-toolbar-title>Speed Wash</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn to="/app/home" text>Inicio</v-btn>
+      <v-btn to="/app" text>Inicio</v-btn>
       <v-menu
         transition="scale-transition"
       >

@@ -503,7 +503,7 @@ const saveOrUpdateData = () => {
 
 const guardarData = async(data) => {
     try {
-        const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos${ isSequential.value ? '/sequential' : ''}`, data)
+        const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos/`, data)
         emit('showAlert', response.data.message)
         emit('onRegAdded')            
     } catch (error) {

@@ -7,7 +7,7 @@
       <v-col v-for="action in actions" :key="action.title" cols="12" sm="6" md="4">
         <v-card @click="navigateTo(action.route)" class="text-center">
           <v-card-text class="d-flex align-center justify-center flex-column" style="height: 150px;">
-            <v-icon color="red" size="60">{{ action.icon }}</v-icon> <!-- Ícono centrado y en color naranja -->
+            <v-icon color="green" size="60">{{ action.icon }}</v-icon> <!-- Ícono centrado y en color naranja -->
             <div class="text-h6 mt-2">{{ action.title }}</div>
           </v-card-text>
         </v-card>
@@ -50,8 +50,8 @@ const router = useRouter();
 const actions = ref([
   { title: 'Agregar Nuevo Proceso', icon: 'mdi-plus-circle', route: '/app/proceso/lavado' },
   { title: 'Configurar Aplicación', icon: 'mdi-cog', route: '/app/configuracion' },
-  { title: 'Ver Procesos Pendientes', icon: 'mdi-clock', route: '/app/operacion/pendiente' },
-  { title: 'Ver Procesos Finalizados', icon: 'mdi-check-circle', route: '/app/operacion/finalizado' },
+  { title: 'Ver Procesos Pendientes', icon: 'mdi-clock', route: '/app/operaciones/pendientes' },
+  { title: 'Ver Procesos Finalizados', icon: 'mdi-check-circle', route: '/app/operaciones/finalizadas' },
 ]);
 
 // Navegar a una ruta específica
