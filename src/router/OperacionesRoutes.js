@@ -6,17 +6,17 @@ const OperacionesRoutes = {
         {
             path:'',
             name:'Todas',
-            component: () => import('../views/OperacionPages/todas.vue')
+            component: () => import('../views/operacionPages/todas.vue')
         },
         {
             path: 'finalizadas',
             name: 'Finalizadas',
-            component: () => import('../views/OperacionPages/finalizados.vue')
+            component: () => import('../views/operacionPages/finalizados.vue')
         },
         {
             path: 'pendientes',
             name: 'Pendientes',
-            component: () => import('../views/OperacionPages/pendientes.vue')
+            component: () => import('../views/operacionPages/pendientes.vue')
         }
     ]
 }
