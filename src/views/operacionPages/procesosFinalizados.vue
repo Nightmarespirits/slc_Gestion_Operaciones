@@ -1,11 +1,4 @@
 <template>
-    <v-breadcrumbs :items="breadcumbItems">
-        <template v-slot:prepend>
-            <v-icon icon="mdi-home" size="small"></v-icon>
-        </template>
-    </v-breadcrumbs>
-    <p class="text-h4 pl-8 mt-2"> Proceso {{title}}</p>
-    <!--Contenido de la pagina-->
     <v-container>
         <!--Alert-->
         <v-alert
@@ -164,6 +157,8 @@
         <!--Fin de la tabla procesos -->
 
     </v-container>
+
+
     <!--Fin del Contenido de la pagina-->
 </template>
 
@@ -174,25 +169,6 @@ import TableDataComponent from '../../components/proceso/TableDataComponent.vue'
 import { mergeTableData } from '../../utils/mergeTableData.js';
 
 const title = ref('Finalizado')
-//Breadcumb
-const breadcumbItems = ref([
-    {
-    title: 'Dashboard',
-    disabled: false,
-    to: '/app/home',
-    },
-    {
-    title: 'Operaciones',
-    disabled: false,
-    to: '/app/operaciones',
-    },
-    {
-    title: `${title.value}`,
-    disabled: true,
-    to: `/app/${title.value}`,
-    }
-])
- 
 const selectedItem = ref(null)
 
 const mergedDetails = ref([])
@@ -282,5 +258,141 @@ const cargarRegistros = async () => {
 onMounted(()=>{
     cargarRegistros()
 })
+/**
+ * 
+ * 
+         <!--Dialog Component-->
+        <v-dialog
+        v-model="dialog"
+        transition="dialog-bottom-transition" 
+        fullscreen
+        >
+        <v-card>
+            <v-toolbar>
+                <v-btn
+                    icon="mdi-close"
+                    @click="dialog = false"
+                ></v-btn>
+
+                <v-toolbar-title>Proceso {{ procesoID }} </v-toolbar-title>
+
+                <v-spacer></v-spacer>
+
+                <v-toolbar-items>
+                    <v-btn
+                    text="Cerrar"
+                    variant="text"
+                    @click="dialog=false"
+                    ></v-btn>
+                </v-toolbar-items>
+            </v-toolbar>
+            <!--Contenido de el Dialog-->
+            <v-container>
+                <v-row>
+                    <v-col cols="12" sm="6" md="6" lg="3">
+                        <p class="text-h5 my-6">Operación ID:</p>
+                        <p>{{ operacionID }}</p>
+                    </v-col>
+
+                    <v-col cols="12" sm="6" md="6" lg="3">
+                        <p class="text-h5 my-6">Responsable:</p>
+                        <p>{{ procesoResponsable }}</p>
+                    </v-col>
+
+                    <v-col cols="12" sm="6" md="6" lg="3">
+                        <p class="text-h5 my-6">Local:</p>
+                        <p>{{ procesoSede }}</p>
+                    </v-col>
+
+                    <v-col cols="12" sm="6" md="6" lg="3">
+                        <p class="text-h5 my-6">Estado del Proceso:</p>
+                        <div>
+                        Proceso
+                        <v-chip
+                            :color="procesoEstado ? 'green' : 'red'"
+                            :text="procesoEstado ? 'Finalizado' : 'Pendiente'"
+                            class="text-uppercase"
+                            size="small"
+                            label
+                        ></v-chip>
+                        </div>
+                    </v-col>
+                </v-row>
+
+                
+                <p class="text-h5 my-6 ">Detalles de Proceso</p>
+                <v-table>
+                    
+                    <thead>
+                        <tr>
+                        <th class="text-center">N° ORDEN</th>
+                        <th class="text-center">MAQUINA</th>
+                        <th class="text-center">CONTEO</th>
+                        <th class="text-center">IDENTIFICADOR</th>
+                        <th class="text-center">OBSERVACIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item) in mergedDetails" :key="item.numOrden">
+                        <!-- NUMORDEN con rowspan-->
+                        <td 
+                            v-if="item.rowspan1 > 0"
+                            :rowspan="item.rowspan1"
+                            class="text-center"
+                        >
+                            {{ item?.numOrden || '[Editar]' }}
+                        </td>
+                        
+                        <!-- MAQUINA con rowspan -->
+                        <td
+                            v-if="item.rowspan2 > 0"
+                            :rowspan="item.rowspan2"
+                            class="text-center"
+                        >
+                            {{ item?.maquina?.nombre || '[Editar]'}}
+                        </td>
+                        
+                        <td class="text-center">{{item.cantidad}}</td>
+                        <td class="text-center">
+                            <v-chip :color="evalColor(item.colorMarcado || '[Sin Agregar]')" class="text-lowercase" size="large" label>
+                                {{ item?.colorMarcado || '[Sin Agregar]'}}
+                            </v-chip>
+                        </td>
+                        <td class="text-center">{{item.obs}}</td>
+                        </tr>
+                    </tbody>
+                </v-table>
+            </v-container>
+            <!--Fin de contenido del Dialog-->
+        </v-card>
+        </v-dialog>
+        <!--Fin del Dialog Component-->
+
+        <!--Confirm Dialog COMPONENT-->
+        <v-dialog
+        v-model="confirmDialog"
+        max-width="400"
+        persistent
+        >
+        <v-card
+            prepend-icon="mdi-alert"
+            text="Seguro que desea eliminar Este registro?"
+            title="Mesaje de Confirmacion"
+        >
+            <template v-slot:actions>
+            <v-spacer></v-spacer>
+
+            <v-btn @click="confirmDialog = false">
+                Cancelar
+            </v-btn>
+
+            <v-btn @click="doDeleteItem">
+                Eliminar
+            </v-btn>
+            </template>
+        </v-card>
+        </v-dialog>
+        <!--Fin del Confirm Dialog COMPONENT--> 
+ */
 </script>
 

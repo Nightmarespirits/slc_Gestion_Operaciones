@@ -1,38 +1,38 @@
 <template>
     <form class="m-0 py-0">
         <v-container fluid class="my-0 py-0">
-            <v-row class="my-0 py-0" align="center" justify="center">
-                    
-                    <!-- Botón Nuevo -->
-                    <v-col 
+            <v-row class="my-0 py-0 pt-3" align="center" justify="center"> 
+                <!-- Botón Nuevo -->
+                <v-col 
+                cols="12" sm="4" md="3" 
+                class="d-flex justify-center mb-0"
+                >
+                <v-btn
+                variant="elevated"
+                append-icon="mdi-autorenew"
+                height="52"
+                min-width="164"
+                text="Nuevo"
+                @click="cleanForm"
+                ></v-btn>
+                </v-col>
+                <!-- Botón Guardar/Actualizar -->
+                <v-col 
                     cols="12" sm="4" md="3" 
                     class="d-flex justify-center mb-0"
-                    >
+                >
                     <v-btn
                     variant="elevated"
-                    append-icon="mdi-autorenew"
+                    append-icon="mdi-content-save"
                     height="52"
                     min-width="164"
-                    text="Nuevo"
-                    @click="cleanForm"
-                    ></v-btn>
-                    </v-col>
-                    <!-- Botón Guardar/Actualizar -->
-                    <v-col 
-                        cols="12" sm="4" md="3" 
-                        class="d-flex justify-center mb-0"
+                    @click="saveOrUpdateData"
                     >
-                        <v-btn
-                        variant="elevated"
-                        append-icon="mdi-content-save"
-                        height="52"
-                        min-width="164"
-                        @click="saveOrUpdateData"
-                        >
-                        {{ btnSaveOrUpdateForm }}
-                        </v-btn>
-                    </v-col>
-                    
+                    {{ btnSaveOrUpdateForm }}
+                    </v-btn>
+                </v-col>
+                <!-- Switch Seguimiento de Ciclo -->
+                
             </v-row>
             
             <v-row v-if="editionMode" class="align-center">
@@ -46,128 +46,133 @@
                     class="ma-1" 
                     size="small" 
                     label>
-                    <v-icon icon="mdi-label" start></v-icon>
+                    <v-icon class="pr-3">mdi-more</v-icon>
                     {{detail.numOrden }}
                     </v-chip>
                 </v-col>
                 
             </v-row>
 
-            <v-row>
-                <v-col cols="12" sm="6" md="3">
-                    <v-select
-                    v-model="sede.value.value"
-                    :error-messages="sede.errorMessage.value" 
-                    :items="sedeItems" 
-                    item-value="_id"
-                    item-title="nombre"
-                    label="Sede" 
-                    />
-                </v-col>
-                
-                <v-col cols="12" sm="6" md="3">
-                    <v-select
-                    v-model="responsable.value.value"
-                    :error-messages="responsable.errorMessage.value" 
-                    :items="responsableItems" 
-                    item-value="_id"
-                    item-title="nombres"
-                    label="Responsable"
-                    />
-                </v-col>
-                
-                <v-col cols="12" sm="6" md="3">
-                    <v-btn 
-                    variant="plain" 
-                    prepend-icon="mdi-shape-square-plus" 
-                    @click="openDialogDetails(item)"
-                    color="success"
-                    height="52"
-                    min-width="164"
-                    > 
-                    {{btnAddDetalles}}
-                    <v-icon></v-icon>
-                    </v-btn>
-                    <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
-                    <v-card>
-                        <v-toolbar>
-                        <v-btn icon="mdi-close" @click="dialog = false"></v-btn>
-                        <v-toolbar-title>Detalles de Proceso</v-toolbar-title>
-                        <v-spacer></v-spacer>
-                        <v-toolbar-items>
-                            <v-btn text="Cerrar" variant="text" @click="dialog = false"></v-btn>
-                        </v-toolbar-items>
-                        </v-toolbar>
-                        <v-container>
-                        <v-row>
-                        <v-col>
-                            <v-btn @click="cleanDetailsForm">
-                                Nuevo
-                            </v-btn>
-                        </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col cols="12" sm="6" md="2">
-                                <v-text-field 
-                                label="Numero Orden(s)" 
-                                v-model="numOrden.value.value" 
-                                :error-messages="numOrden.errorMessage.value" 
-                                />
+            <v-card
+            variant="elevated"
+            elevation="2"
+            class="mb-10 py-4 px-2"
+            >
+                <v-row>
+                    <v-col cols="12" sm="3" md="3">
+                        <v-select
+                        v-model="sede.value.value"
+                        :error-messages="sede.errorMessage.value" 
+                        :items="sedeItems" 
+                        item-value="_id"
+                        item-title="nombre"
+                        label="Sede" 
+                        />
+                    </v-col>
+                    
+                    <v-col cols="12" sm="3" md="3">
+                        <v-select
+                        v-model="responsable.value.value"
+                        :error-messages="responsable.errorMessage.value" 
+                        :items="responsableItems" 
+                        item-value="_id"
+                        item-title="nombres"
+                        label="Responsable"
+                        />
+                    </v-col>
+                    
+                    <v-col cols="12" sm="3" md="3">
+                        <v-btn 
+                        variant="plain" 
+                        prepend-icon="mdi-shape-square-plus" 
+                        @click="openDialogDetails(item)"
+                        color="success"
+                        height="52"
+                        min-width="164"
+                        > 
+                        {{btnAddDetalles}}
+                        <v-icon></v-icon>
+                        </v-btn>
+                        <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
+                        <v-card>
+                            <v-toolbar>
+                            <v-btn icon="mdi-close" @click="dialog = false"></v-btn>
+                            <v-toolbar-title>Detalles de Proceso</v-toolbar-title>
+                            <v-spacer></v-spacer>
+                            <v-toolbar-items>
+                                <v-btn text="Cerrar" variant="text" @click="dialog = false"></v-btn>
+                            </v-toolbar-items>
+                            </v-toolbar>
+                            <v-container>
+                            <v-row>
+                            <v-col>
+                                <v-btn @click="cleanDetailsForm">
+                                    Nuevo
+                                </v-btn>
                             </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12" sm="6" md="2">
+                                    <v-text-field 
+                                    label="Numero Orden(s)" 
+                                    v-model="numOrden.value.value" 
+                                    :error-messages="numOrden.errorMessage.value" 
+                                    />
+                                </v-col>
 
-                            
-                            <v-col cols="12" sm="6" md="2">
-                                <v-text-field 
-                                label="Conteo(cantidad)" 
-                                v-model="cantidad.value.value" 
-                                hint="Mantente concentrado(a)" 
-                                :error-messages="cantidad.errorMessage.value" 
-                                />
-                            </v-col>
-                            <v-col cols="12" sm="6" md="2">
-                                <v-text-field 
-                                label="Observaciones" 
-                                v-model="obs.value.value" 
-                                hint="Opcional" 
-                                :error-messages="obs.errorMessage.value" 
-                                />
-                            </v-col>
-                            
-                            <v-col cols="12" sm="6" md="2">
-                                <v-btn @click="appendOrUptdateDetails">{{detailBtnAppendOrUpdate}}</v-btn>
-                            </v-col>
-                        </v-row>
-                        <v-table hover>
-                            <thead>
-                            <tr>
-                                <th class="text-center">N° ORDEN</th>
-                                <th class="text-center">CONTEO</th>
-                                <th class="text-center">OBSERVACIONES</th>
-                                <th class="text-center">ACCIONES</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="(item) in details" :key="item.numOrden">
-                                <td class="text-center">{{ item?.numOrden || '[Sin agregar]'}}</td>
-                                <td class="text-center">{{ item?.cantidad || '[Sin Agregar]' }}</td>
-                                <td class="text-center">{{ item?.obs || '[Sin Agregar]' }}</td>
-                                <td class="text-center">
-                                <v-btn variant="plain" icon="mdi-pencil" @click="fillDetail(item)" color="blue-darken-1"></v-btn>
-                                <v-btn variant="plain" icon="mdi-delete" @click="deleteDetail(item)" color="red-darken-1"></v-btn>
+                                
+                                <v-col cols="12" sm="6" md="2">
+                                    <v-text-field 
+                                    label="Conteo(cantidad)" 
+                                    v-model="cantidad.value.value" 
+                                    hint="Mantente concentrado(a)" 
+                                    :error-messages="cantidad.errorMessage.value" 
+                                    />
+                                </v-col>
+                                <v-col cols="12" sm="6" md="2">
+                                    <v-text-field 
+                                    label="Observaciones" 
+                                    v-model="obs.value.value" 
+                                    hint="Opcional" 
+                                    :error-messages="obs.errorMessage.value" 
+                                    />
+                                </v-col>
+                                
+                                <v-col cols="12" sm="6" md="2">
+                                    <v-btn @click="appendOrUptdateDetails">{{detailBtnAppendOrUpdate}}</v-btn>
+                                </v-col>
+                            </v-row>
+                            <v-table hover>
+                                <thead>
+                                <tr>
+                                    <th class="text-center">N° ORDEN</th>
+                                    <th class="text-center">CONTEO</th>
+                                    <th class="text-center">OBSERVACIONES</th>
+                                    <th class="text-center">ACCIONES</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="(item) in details" :key="item.numOrden">
+                                    <td class="text-center">{{ item?.numOrden || '[Sin agregar]'}}</td>
+                                    <td class="text-center">{{ item?.cantidad || '[Sin Agregar]' }}</td>
+                                    <td class="text-center">{{ item?.obs || '[Sin Agregar]' }}</td>
+                                    <td class="text-center">
+                                    <v-btn variant="plain" icon="mdi-pencil" @click="fillDetail(item)" color="blue-darken-1"></v-btn>
+                                    <v-btn variant="plain" icon="mdi-delete" @click="deleteDetail(item)" color="red-darken-1"></v-btn>
 
-                                </td>
-                            </tr>
-                            </tbody>
-                        </v-table>
-                        </v-container>
-                    </v-card>
-                    </v-dialog>
-                </v-col>
-                <v-col cols="12" sm="6" md="3">
-                    <v-checkbox class="ma-0 pa-0" v-model="estado" :label="`${estado ? 'Finalizado' : 'Pendiente'}`"></v-checkbox>
-                </v-col>
-            </v-row>
-
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </v-table>
+                            </v-container>
+                        </v-card>
+                        </v-dialog>
+                    </v-col>
+                    <v-col cols="12" sm="3" md="3">
+                        <v-checkbox class="ma-0 pa-0" v-model="estado" :label="`${estado ? 'Finalizado' : 'Pendiente'}`"></v-checkbox>
+                    </v-col>
+                </v-row>
+            </v-card>
         </v-container>
     </form>
 </template>
@@ -246,15 +251,25 @@ const detailIsEditing = ref(false) // Verificar si estamos en modo edición
 const detailBtnAppendOrUpdate = ref('Agregar'); // Texto dinámico del botón de detalles del dialogo
 
 //Usage booleans for all Form
-/**Importante
- * Para el proceso de doblado es nesesario que la variable @isSequential este activa (true)
- * para que pueda continuar el ciclo y finalizar la operacion
+/**Importante!!!!
+ *  -Para el proceso de doblado es nesesario que la variable @isSequential este activa (true)
+ *   para que pueda continuar el ciclo y finalizar la operacion
  */
 const isSequential = ref(true);
 const editionMode = ref(false)
 const btnAddDetalles = ref('Agregar Detalles')
 const btnSaveOrUpdateForm = ref('Guardar')
 
+//Observar si el titulo es Teñido desactivar tipo proceso secuencial (para insertar proceso teñido)
+watch(() => props.tipoProceso,
+(value) => {
+    if(value == 'Teñido'){
+        isSequential.value = false;
+    }else{
+        isSequential.value = true;
+    }
+},
+{ deep: true, immediate: true })
 
 //Observador de seleccion de la tabla de procesos
 watch(() => props.selectedItem, 
@@ -376,7 +391,7 @@ const saveOrUpdateData = () => {
     }
 
     const data = {
-        tipo: title.toLowerCase(),
+        tipo: title!= 'Teñido' ? title.toLowerCase() : 'tenido',
         sede: {
             _id : sede.value.value
         },

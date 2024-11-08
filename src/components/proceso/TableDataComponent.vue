@@ -45,7 +45,7 @@
             label
           >
             <template #prepend>
-              <v-icon>mdi-label</v-icon>
+              <v-icon class="pr-3">mdi-more</v-icon>
             </template>
             {{ detalle?.numOrden || '[Editar]'}}
           </v-chip>
@@ -71,40 +71,31 @@
 
         <template #item.acciones="{ item }">
           <v-btn class="ma-1"
-          append-icon="mdi-open-in-new" 
+          icon="mdi-open-in-new" 
           @click="btnFullscreenClicked(item)"
           color="warning"
           variant="plain"
-          size="small"
-          rounded="s"
-          elevation="1"
-          > 
-          Más
-          </v-btn>
+          size="large"
+          ></v-btn>
 
-          <v-btn class="ma-1"
+          <v-btn
             variant="plain"
-            rounded="s"
-            elevation="1"
             color="success"
             @click="btnEditClicked(item)"
-            append-icon="mdi-pencil"
-            size="small"
+            icon="mdi-pencil"
+            size="large"
             v-if="title!='Finalizado'"
-          >Editar
-          </v-btn>
+          ></v-btn>
 
-          <v-btn class="ma-1"
-            color="red-accent-4"
-            @click="btnDeleteClicked(item)"
-            append-icon="mdi-delete"
-            variant="plain"
-            size="small"
-            rounded="s"
-            elevation="1"
-            v-if="title!='Finalizado'"
-          >Eliminar
-          </v-btn>
+          
+          <v-btn
+          variant="plain"
+          color="red-accent-4"
+          @click="btnDeleteClicked(item)"
+          icon="mdi-delete" 
+          size="large"
+          v-if="title!='Finalizado'"
+          ></v-btn>
 
           
         </template>
@@ -186,6 +177,4 @@ onMounted(() => {
     window.removeEventListener('resize', updateMobileView)
   }
 })
-
-
 </script>

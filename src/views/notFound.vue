@@ -4,7 +4,7 @@
         <v-col class="text-center">
           <div class="svg-container">
             <v-img
-              src="/error-page-svgrepo-com.svg" 
+              src="/emoticon-confused-outline.svg" 
               max-width="300"
               alt="Página no encontrada"
             ></v-img>
@@ -24,7 +24,7 @@
   const router = useRouter();
   
   const goHome = () => {
-    router.push({ name: 'Home' });
+    router.push({ name: 'App' });
   };
   </script>
   

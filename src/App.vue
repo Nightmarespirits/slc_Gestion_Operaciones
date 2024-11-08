@@ -5,6 +5,11 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
+import { useTestApiStore } from './store/testApi';
+
+//Inicializar API (Para API desplegada en Render)
+const apiStore = useTestApiStore()
+apiStore.initializeAPI()
+
 </script>
 

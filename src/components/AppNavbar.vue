@@ -28,6 +28,9 @@
       <v-btn @click="toggleTheme" icon>
         <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
+      <v-btn @click="togglefullScreen" icon>
+        <v-icon>{{ isFullScreen ? 'mdi-fullscreen' : 'mdi-fullscreen-exit' }}</v-icon>
+      </v-btn>
     </v-app-bar>
   </template>
   
@@ -45,6 +48,7 @@
   const search = ref('');
   const drawerOpen = ref(false); 
   const isDark = computed(() => theme.global.current.value.dark);
+  const isFullScreen = ref(false);
   
   const toggleTheme = () => {
     theme.global.name.value = isDark.value ? 'light' : 'dark';
@@ -58,4 +62,16 @@
     
     authStore.checkcAuth(); 
   })
+
+  const togglefullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      isFullScreen.value = true;
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        isFullScreen.value = false;
+      }
+    }
+  }
   </script>

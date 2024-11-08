@@ -1,5 +1,5 @@
 <template>
-    <v-layout>
+      <v-layout>
       <v-navigation-drawer v-model="drawer" color="primary" disable-resize-watcher>
         <v-list nav>
           <v-list-item
@@ -36,7 +36,6 @@
           <v-btn append-icon="mdi-chevron-right" class="ms-auto text-none" slim text="Iniciar Sesion" @click="openLogin" />
         </div>
       </v-app-bar>
-  
       <v-main :min-height="$vuetify.display.mdAndUp ? 800 : 550">
         <v-container class="h-100 d-flex align-center justify-center">
           <div class="w-100 w-md-50 text-center">
@@ -77,17 +76,14 @@
           </div>
         </v-container>
       </v-main>
+      
     </v-layout>
-    <p>{{ apiStateMsg }}</p>
-  </template>
-  
-  <script setup>
-    import { onMounted, shallowRef, ref } from 'vue'
+</template>
+
+<script setup>
+    import {shallowRef, ref } from 'vue'
     import router from './router';
-    import axios from 'axios';
     const drawer = shallowRef(false)
-    const apiStateMsg = ref('')
-    
     const items = [
       'Productos',
       'Servicios',
@@ -97,10 +93,6 @@
     const openLogin = () => {
         router.push('/login')
     }
-    onMounted(async ()=>{
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}`)
-      apiStateMsg.value = response.data
-    })
   </script>
   
   <style scoped>

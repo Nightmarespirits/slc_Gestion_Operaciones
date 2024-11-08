@@ -1,0 +1,21 @@
+{
+    "name": "SLC gestor procesos",
+    "short_name": "gestor procesos",
+    "start_url": "/login",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#1976d2",
+    "icons": [
+      {
+        "src": "public/SLc.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "public/slc_logo_Expanded.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
+  

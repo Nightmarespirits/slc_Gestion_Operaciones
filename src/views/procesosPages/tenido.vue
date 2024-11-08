@@ -1,12 +1,6 @@
 <template>
-    <v-breadcrumbs :items="breadcumbItems">
-        <template v-slot:prepend>
-            <v-icon icon="mdi-home" size="small"></v-icon>
-        </template>
-    </v-breadcrumbs>
-    <p class="text-h4 pl-8 mt-2">Proceso de {{title }}</p>
     <!--Contenido de la pagina-->
-    <v-container>
+    <v-container class="my-0 py-0 mx-0 px-0">
         <!--Alert-->
         <v-alert
         v-model="alert"
@@ -20,12 +14,14 @@
         </v-alert>
 
         <!--formulario-->
-        <FormComponent 
+        <PM_FormComponent
         @showAlert="activeAlert"
         @onRegAdded="cargarRegistros"
         :tipoProceso="title"
         :selectedItem="selectedItem"
-        ></FormComponent>
+        >
+
+        </PM_FormComponent>
 
         <!--Dialog Component-->
         <v-dialog
@@ -179,29 +175,11 @@
 import { onMounted, ref } from 'vue'
 import axios from 'axios';
 import TableDataComponent from '../../components/proceso/TableDataComponent.vue';
-import FormComponent from '../../components/proceso/FormComponent.vue';
+import PM_FormComponent from '../../components/proceso/PM_FormComponent.vue';
 import { mergeTableData } from '../../utils/mergeTableData.js';
 
 const title = ref('Teñido')
-//Breadcumb
-const breadcumbItems = ref([
-    {
-    title: 'Dashboard',
-    disabled: false,
-    to: '/app/home',
-    },
-    {
-    title: 'Operaciones',
-    disabled: false,
-    to: '/app/operaciones',
-    },
-    {
-    title: `${title.value}`,
-    disabled: true,
-    to: `/app/${title.value}`,
-    }
-])
- 
+
 const selectedItem = ref(null)
 
 const mergedDetails = ref([])
@@ -218,7 +196,7 @@ const dataHeaders = [
     { align: 'center', key: 'fechaYHora', title: 'Fecha y Hora' },
     { align: 'center', key:'responsable', title: 'Responsable'},
     { align: 'center', key: 'estado', title: 'Estado' },
-    { align: 'end', key: 'acciones', title: 'Acciones'}
+    { align: 'center', key: 'acciones', title: 'Acciones', width: '250px'}
 ]
 
 //del boton editar
@@ -283,7 +261,7 @@ const cargarRegistros = async () => {
     try {
         const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos/filter`, {
             params: {
-                tipo: title.value.toLowerCase()
+                tipo: 'tenido'
             }
         })
         dataItems.value = response.data

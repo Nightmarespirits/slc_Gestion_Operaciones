@@ -8,6 +8,8 @@ export const evalColor = color => {
           return 'blue'
       case 'amarillo':
           return 'yellow'
+      case 'ninguno':
+            return 'withe'
       default:
           return ''
 
