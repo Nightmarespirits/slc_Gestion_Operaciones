@@ -1,3 +1,80 @@
+<script setup>
+/**COMPONENTE PRINCIPAL EN LAS PAGINAS DE PROCESOS
+ * Recibe las props:
+ * @title -> El tipo de proceso: [lavado, secado, planchado]
+ * @dataHeaders -> Las cabeceras de las columnas, pueden variar ligeramente
+ * @dataItems -> los items, contenido de la tabla, formato json
+ */
+import { ref, computed, onMounted } from 'vue'
+import { useDisplay } from 'vuetify';
+import { evalColor } from '../../utils/evalColor';
+// Usamos el helper 'useDisplay' para manejar breakpoints
+const { xs } = useDisplay();
+
+// Definimos 'isMobile' usando computed
+const isMovil = computed(() => xs.value);
+
+const search = ref('')
+
+const emit = defineEmits(['onFullscreenItem', 'onEditItem'])
+
+const props = defineProps({
+  title: {
+    type: String,
+    required: true
+  },
+  dataHeaders: {
+    type: Array,
+    required: true
+  },
+  dataItems: {
+    type: Array,
+    required: true
+  }
+})
+
+
+const filteredItems = computed(() => {
+  if (!search.value) return props.dataItems
+
+  const searchTerm = search.value.toString().toLowerCase()
+  
+  return props.dataItems.filter(item => {
+    const matchResponsable = 
+      item.responsable?.apellidos?.toLowerCase().includes(searchTerm) ||
+      item.responsable?.nombres?.toLowerCase().includes(searchTerm)
+
+    const matchNumOrden = item.detalles?.some(detalle => 
+      detalle.numOrden?.toString().toLowerCase().includes(searchTerm)
+    )
+
+    return matchResponsable || matchNumOrden
+  })
+})
+
+const btnFullscreenClicked = (item) => {
+  emit('onFullscreenItem', item)
+}
+
+const btnEditClicked = (item) => {
+  emit('onEditItem', item)
+}
+
+// Detectar cambio de tamaño de pantalla para activar vista móvil
+onMounted(() => {
+  window.addEventListener('resize', () => {
+    if( window.innerWidth <= 600){
+      isMovil.value = true;
+    }else{
+      isMovil.value = false;
+    }
+  })
+
+  return () => {
+    window.removeEventListener('resize', updateMobileView)
+  }
+})
+</script>
 <template>
   <v-card flat>
     <v-card-title class="d-flex align-center pe-2">
@@ -66,14 +143,20 @@
             class="text-uppercase"
             size="small"
             label
-          ></v-chip>
+          >
+          <template #prepend>
+                <v-icon size="small" class="pr-3">
+                    {{ item.estado ? 'mdi-checkbox-marked-circle-outline' : 'mdi-clock-outline' }}
+                </v-icon>
+            </template>
+        </v-chip>
         </template>
 
         <template #item.acciones="{ item }">
           <v-btn class="ma-1"
-          icon="mdi-open-in-new" 
+          icon="mdi-eye" 
           @click="btnFullscreenClicked(item)"
-          color="warning"
+          color="primary"
           variant="plain"
           size="large"
           ></v-btn>
@@ -87,94 +170,8 @@
             v-if="title!='Finalizado'"
           ></v-btn>
 
-          
-          <v-btn
-          variant="plain"
-          color="red-accent-4"
-          @click="btnDeleteClicked(item)"
-          icon="mdi-delete" 
-          size="large"
-          v-if="title!='Finalizado'"
-          ></v-btn>
-
-          
         </template>
       </v-data-table>
   </v-container>
   </v-card>
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useDisplay } from 'vuetify';
-import { evalColor } from '../../utils/evalColor';
-// Usamos el helper 'useDisplay' para manejar breakpoints
-const { xs } = useDisplay();
-
-// Definimos 'isMobile' usando computed
-const isMovil = computed(() => xs.value);
-
-const search = ref('')
-
-const emit = defineEmits(['onFullscreenItem', 'onEditItem', 'onDeleteItem'])
-
-const props = defineProps({
-  title: {
-    type: String,
-    required: true
-  },
-  dataHeaders: {
-    type: Array,
-    required: true
-  },
-  dataItems: {
-    type: Array,
-    required: true
-  }
-})
-
-
-const filteredItems = computed(() => {
-  if (!search.value) return props.dataItems
-
-  const searchTerm = search.value.toString().toLowerCase()
-  
-  return props.dataItems.filter(item => {
-    const matchResponsable = 
-      item.responsable?.apellidos?.toLowerCase().includes(searchTerm) ||
-      item.responsable?.nombres?.toLowerCase().includes(searchTerm)
-
-    const matchNumOrden = item.detalles?.some(detalle => 
-      detalle.numOrden?.toString().toLowerCase().includes(searchTerm)
-    )
-
-    return matchResponsable || matchNumOrden
-  })
-})
-
-const btnFullscreenClicked = (item) => {
-  emit('onFullscreenItem', item)
-}
-
-const btnEditClicked = (item) => {
-  emit('onEditItem', item)
-}
-
-const btnDeleteClicked = (item) => {
-  emit('onDeleteItem', item)
-}
-// Detectar cambio de tamaño de pantalla para activar vista móvil
-onMounted(() => {
-  window.addEventListener('resize', () => {
-    if( window.innerWidth <= 600){
-      isMovil.value = true;
-    }else{
-      isMovil.value = false;
-    }
-  })
-
-  return () => {
-    window.removeEventListener('resize', updateMobileView)
-  }
-})
-</script>

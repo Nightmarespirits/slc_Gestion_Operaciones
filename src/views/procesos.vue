@@ -8,7 +8,7 @@
         <v-divider></v-divider>
         
         <v-tab
-          prepend-icon="mdi-water-pump"
+          prepend-icon="mdi-washing-machine"
           text="Lavado"
           value="/app/proceso/lavado"
           class="text-none"
@@ -16,7 +16,7 @@
         ></v-tab>
         <v-divider></v-divider>
         <v-tab
-          prepend-icon="mdi-thermometer-lines"
+          prepend-icon="mdi-tumble-dryer"
           text="Secado"
           value="/app/proceso/secado"
           class="text-none"
@@ -24,7 +24,7 @@
         ></v-tab>
         <v-divider></v-divider>
         <v-tab
-          prepend-icon="mdi-hanger"
+          prepend-icon="mdi-format-columns"
           text="Doblado"
           value="/app/proceso/doblado"
           class="text-none"
@@ -33,7 +33,7 @@
 
         <v-divider></v-divider>
         <v-tab
-          prepend-icon="mdi-temperature-fahrenheit"
+          prepend-icon="mdi-iron"
           text="Planchado"
           value="/app/proceso/planchado"
           class="text-none"

@@ -1,4 +1,5 @@
 <template>
+    <p class="text-h4 pl-8 mt-2">Operaciones Pendientes</p>
     <v-container>
         <!-- Alerta de notificación -->
         <v-alert
@@ -9,12 +10,60 @@
             variant="tonal"
         ></v-alert>
 
+        <!--Buscador de la tabla-->
+        <v-text-field
+        v-model="search"
+        density="compact"
+        label="Buscar N° de Orden"
+        prepend-inner-icon="mdi-magnify"
+        variant="solo-filled"
+        flat
+        hide-details
+        single-line
+        ></v-text-field>
+
+        <!--Confirm Dialog COMPONENT-->
+        <v-dialog
+        v-model="confirmDialog"
+        max-width="400"
+        persistent
+        >
+            <v-card
+            prepend-icon="mdi-alert"
+            title="Confirmar Eliminacion de Registro"
+            subtitle="Nesecitara permisos de Administrador"
+            >
+            <v-card-text>
+                <v-text>Ingrese la contraseña</v-text>
+                <v-text-field
+                v-model="confirmPassword"
+                type="password"
+                required
+                variant="underlined"
+              ></v-text-field>
+            </v-card-text>
+
+                <template v-slot:actions>
+                    <v-spacer></v-spacer>
+
+                    <v-btn @click="confirmDialog = false">
+                        Cancelar
+                    </v-btn>
+
+                    <v-btn @click="doDeleteItem">
+                        Eliminar
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
+        <!--Fin del Confirm Dialog COMPONENT-->
+
         <!-- Tabla de Operaciones -->
         <v-data-table
             :headers="dataHeaders"
-            :items="formattedData"
-            :items-per-page="50"
-            :sort-by="[{ key: 'fechas.inicio', order: 'desc' }]"
+            :items="filteredItems"
+            :items-per-page="10"
+            :sort-by="[{ key: 'fechas.fecCreacion', order: 'desc' }]"
             hover
         >
             <!-- Template para los tickets -->
@@ -28,7 +77,7 @@
                     label
                 >
                     <template #prepend>
-                        <v-icon size="small" class="pr-1">mdi-ticket</v-icon>
+                        <v-icon size="small" class="pr-3">mdi-more</v-icon>
                     </template>
                     {{ ticket }}
                 </v-chip>
@@ -39,10 +88,9 @@
                 <v-chip
                     v-for="proceso in item.procesos"
                     :key="proceso.id"
-                    variant="flat"
+                    variant="outlined"
                     class="ma-1"
                     size="small"
-                    :color="getProcesoColor(proceso.tipo)"
                     label
                 >
                     <template #prepend>
@@ -58,17 +106,16 @@
             </template>
 
             <!-- Template para las fechas -->
-            <template #item.fechas="{ item }">
-                <div class="d-flex flex-column align-center">
-                    <span class="text-caption">
-                        Inicio: {{ item.fechas.inicio || '---' }}
-                    </span>
-                    <span class="text-caption">
-                        Final: {{ item.fechas.final || '---' }}
-                    </span>
-                </div>
+            <template #item.inicio="{ item }">
+                <span class="text-caption">
+                    {{ item.fechas.inicio || '---' }}
+                </span>
             </template>
-
+            <template #item.final="{item}">
+                <span class="text-caption">
+                    {{ item.fechas.final || '---' }}
+                </span>
+            </template>
             <!-- Template para el estado -->
             <template #item.estadoOperacion="{ item }">
                 <v-chip
@@ -100,6 +147,13 @@
                 >
                     <v-icon>mdi-eye</v-icon>
                 </v-btn>
+                <v-btn
+                    variant="plain"
+                    color="red-accent-4"
+                    @click="btnDeleteClicked(item)"
+                    icon="mdi-delete" 
+                    size="large"
+                ></v-btn>
             </template>
         </v-data-table>
 
@@ -150,35 +204,48 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useAuthStore } from '../../store/auth';
 import axios from 'axios';
 
 // Estados reactivos
+const authStore = useAuthStore()
 const formattedData = ref([]);
 const dialog = ref(false);
 const alert = ref(false);
 const alertMsg = ref('');
 const selectedItem = ref(null);
 
+const search = ref('')
+const operacionID = ref('')
+const confirmDialog = ref(false)
+const confirmPassword = ref('')
+
 // Definición de headers para la tabla
 const dataHeaders = [
     { 
         align: 'start',
         key: 'ordenes',
-        title: 'N° Orden (Tickets)',
+        title: 'N° Orden',
         width: '25%'
     },
     { 
         align: 'center',
         key: 'procesos',
         title: 'Procesos',
-        width: '30%'
+        width: '25%'
     },
     { 
         align: 'center',
-        key: 'fechas',
-        title: 'Fechas',
-        width: '20%'
+        key: 'inicio',
+        title: 'Fecha de Inicio',
+        width: '15%'
+    },
+    { 
+        align: 'center',
+        key: 'final',
+        title: 'Fecha de Finalizacion',
+        width: '15%'
     },
     { 
         align: 'center',
@@ -190,7 +257,7 @@ const dataHeaders = [
         align: 'center',
         key: 'actions',
         title: 'Acciones',
-        width: '10%',
+        width: '15%',
         sortable: false
     }
 ];
@@ -215,7 +282,7 @@ const getProcesoIcon = (tipo) => {
         'doblado': 'mdi-format-columns',
         'planchado': 'mdi-iron',
         'cc': 'mdi-check-decagram',
-        'tenido': 'mdi-palette'
+        'tenido': 'mdi-water'
     };
     return iconos[tipo] || 'mdi-cog';
 };
@@ -249,6 +316,7 @@ const formatOperacionesData = (operaciones) => {
                 'No asignado'
         })),
         fechas: {
+            fecCreacion: operacion.createdAt || '',
             inicio: operacion.fecInicio || '',
             final: operacion.fecFinal || ''
         },
@@ -257,6 +325,14 @@ const formatOperacionesData = (operaciones) => {
     }));
 };
 
+//Funcion para filtrar segun el Buscador
+const filteredItems = computed(() => {
+    if(!search.value) return formattedData.value
+
+    const searchTerm = search.value.toString().toLowerCase()
+
+    return formattedData.value.filter(item => item.ordenes.toString().toLowerCase().includes(searchTerm))
+})
 // Funciones de manejo de eventos
 const showDetails = (item) => {
     selectedItem.value = item;
@@ -271,6 +347,32 @@ const activeAlert = (msg) => {
     }, 3000);
 };
 
+
+const openConfirmDialog = (item) => {
+    operacionID.value = item.id; 
+    confirmDialog.value = true;
+}
+//Fucion para eliminar Operacion
+const doDeleteItem = async () => {
+    if(await authStore.comparePassword(confirmPassword.value)){
+        try {
+            const response = await axios.delete(`${import.meta.env.VITE_API_URL}/operacion/${operacionID.value}`)
+            confirmDialog.value = false;
+            activeAlert(response.data.message)
+            confirmPassword.value = ''
+            cargarRegistros()
+
+        } catch (error) {
+            console.error('Error al intentar eliminar datos:', error);
+        }
+    }else{
+        confirmDialog.value = false;
+        activeAlert("Contraseña Incorrecta, No se Elimino el Registro")
+        confirmPassword.value = ''
+    }
+    
+    
+}
 // Función para cargar los datos
 const cargarRegistros = async () => {
     try {
@@ -282,25 +384,13 @@ const cargarRegistros = async () => {
     }
 };
 
+const btnDeleteClicked = (item) => {
+    openConfirmDialog(item)
+}
+
 // Ciclo de vida
 onMounted(() => {
     cargarRegistros();
 });
 </script>
 
-<style scoped>
-.v-data-table {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.v-data-table :deep(.v-data-table-header) {
-    background: #f5f5f5;
-}
-
-.text-caption {
-    font-size: 0.75rem;
-    color: rgba(0,0,0,0.6);
-}
-</style>

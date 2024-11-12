@@ -129,37 +129,10 @@
         </v-dialog>
         <!--Fin del Dialog Component-->
 
-        <!--Confirm Dialog COMPONENT-->
-        <v-dialog
-        v-model="confirmDialog"
-        max-width="400"
-        persistent
-        >
-        <v-card
-            prepend-icon="mdi-alert"
-            text="Seguro que desea eliminar Este registro?"
-            title="Mesaje de Confirmacion"
-        >
-            <template v-slot:actions>
-            <v-spacer></v-spacer>
-
-            <v-btn @click="confirmDialog = false">
-                Cancelar
-            </v-btn>
-
-            <v-btn @click="doDeleteItem">
-                Eliminar
-            </v-btn>
-            </template>
-        </v-card>
-        </v-dialog>
-        <!--Fin del Confirm Dialog COMPONENT-->
-
         <!--Tabla Procesos-->
         <TableDataComponent
         @onFullscreenItem="showDetails" 
         @onEditItem="handleItemSelected"
-        @onDeleteItem="openConfirmDialog"
         :title="title" 
         :dataHeaders="dataHeaders" 
         :dataItems="dataItems">
@@ -185,37 +158,21 @@ const mergedDetails = ref([])
 const procesoData = ref(null)
 
 const dialog = ref(false)
-const confirmDialog = ref(false)
 const itemID = ref('')
 const alert = ref(false)
 const alertMsg = ref('')
 const dataItems = ref([])
 const dataHeaders = [
-    { align: 'start', key:'detalles', title: 'N° Orden (Tickets)'},
-    { align: 'center', key: 'fechaYHora', title: 'Fecha y Hora' },
-    { align: 'center', key:'responsable', title: 'Responsable'},
-    { align: 'center', key: 'estado', title: 'Estado' },
-    { align: 'center', key: 'acciones', title: 'Acciones', width: '250px'}
+    { align: 'start', key:'detalles', title: 'N° Orden (Tickets)', width: '25%'},
+    { align: 'center', key: 'fechaYHora', title: 'Fecha y Hora', width: '20%' },
+    { align: 'center', key:'responsable', title: 'Responsable', width: '20%'},
+    { align: 'center', key: 'estado', title: 'Estado', width: '15%' },
+    { align: 'center', key: 'acciones', title: 'Acciones',width: '20%' }
 ]
 
 //del boton editar
 const handleItemSelected = (item) => {
     selectedItem.value = item
-}
-const openConfirmDialog = (item) => {
-    itemID.value = item._id
-    confirmDialog.value = true;
-}
-const doDeleteItem = async () => {
-    try {
-        const response = await axios.delete(`${import.meta.env.VITE_API_URL}/procesos/${itemID.value}`)
-        confirmDialog.value = false;
-        cargarRegistros()
-        activeAlert(response.data.message)
-
-    } catch (error) {
-        console.error('Error al intentar eliminar datos:', error);
-    }
 }
 //Datos para el modo ver Registro de proceso
 const operacionID = ref('')
@@ -265,6 +222,8 @@ const cargarRegistros = async () => {
             }
         })
         dataItems.value = response.data
+
+        console.log("items Todo: ", response.data)
     } catch (error) {
         console.error("Error al Cargar los datos de Registros" + error.mes)
     }

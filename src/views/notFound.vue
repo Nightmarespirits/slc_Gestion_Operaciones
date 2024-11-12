@@ -24,7 +24,7 @@
   const router = useRouter();
   
   const goHome = () => {
-    router.push({ name: 'App' });
+    router.push({ name: 'Home' });
   };
   </script>
   

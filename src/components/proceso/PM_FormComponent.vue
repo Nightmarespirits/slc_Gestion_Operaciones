@@ -1,5 +1,13 @@
 <template>
     <form class="m-0 py-0">
+        <!--Barra de progresion linear-->
+        <v-progress-linear
+          v-show="isLoading"
+          indeterminate
+          rounded
+          class="mt-2"
+        ></v-progress-linear>
+
         <v-container fluid class="my-0 py-0">
             <v-row class="my-0 py-0 pt-3" align="center" justify="center"> 
                 <!-- Botón Nuevo -->
@@ -230,6 +238,7 @@ const {handleSubmit} = useForm({
 })
 
 const title = props.tipoProceso
+const isLoading = ref(false)
 const sedeItems = ref([])
 const responsableItems = ref([])
 const dialog = ref(false)
@@ -251,9 +260,10 @@ const detailIsEditing = ref(false) // Verificar si estamos en modo edición
 const detailBtnAppendOrUpdate = ref('Agregar'); // Texto dinámico del botón de detalles del dialogo
 
 //Usage booleans for all Form
-/**Importante!!!!
+/**IMPORTANTE !!!!
  *  -Para el proceso de doblado es nesesario que la variable @isSequential este activa (true)
  *   para que pueda continuar el ciclo y finalizar la operacion
+ *  - El page planchado usa el FormCompontent y el page teñido usa el PM_FormComponent -> procesoManual
  */
 const isSequential = ref(true);
 const editionMode = ref(false)
@@ -261,6 +271,10 @@ const btnAddDetalles = ref('Agregar Detalles')
 const btnSaveOrUpdateForm = ref('Guardar')
 
 //Observar si el titulo es Teñido desactivar tipo proceso secuencial (para insertar proceso teñido)
+/**IMPORTANTE 
+ * -Este watcher es nesesario para que se guarde como no secuencial en caso de que el proceso sea teñido
+ * (para evitar errores de continuidad de procesos)
+*/
 watch(() => props.tipoProceso,
 (value) => {
     if(value == 'Teñido'){
@@ -411,23 +425,31 @@ const saveOrUpdateData = () => {
 }
 
 const guardarData = async(data) => {
+    isLoading.value = true; // Activa el indicador de carga
     try {
-        const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos${ isSequential.value ? '/sequential' : ''}`, data)
+        const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos/`, data)
         emit('showAlert', response.data.message)
         emit('onRegAdded')            
     } catch (error) {
         console.error('Error al enviar datos:', error);
+    }finally{
+        cleanForm()
+        isLoading.value=false; //Desactiva el indicador de carga
     }
-    cleanForm()
+   
 }
 
 const actualizarData = async(data) => {
+    isLoading.value = true;
     try {
         const response = await axios.put( `${import.meta.env.VITE_API_URL}/procesos/${id.value}`, data)
         emit('showAlert', response.data.message)
         emit('onRegAdded')            
     } catch (error) {
         console.error('Error al intentar Actualizar datos:', error);
+    }finally{
+        cleanForm()
+        isLoading.value = false;
     }
 }
 const cargarSedes = async () => {
@@ -454,21 +476,6 @@ onMounted(()=>{
     cargarResponsables()
 })
 
-//Otras funciones
-const evalColor = color => {
-    switch (color.toLowerCase()) {
-        case 'rojo':
-            return 'red';
-        case 'verde':
-            return 'green'
-        case 'azul':
-            return 'blue'
-        case 'amarillo':
-            return 'yellow'
-        default:
-            break;
-    }
-}
 const cleanForm = () => {
     editionMode.value = false
     sede.value.value = '';

@@ -5,13 +5,9 @@ import { decoderJWT, isTokenValid } from "../utils/jwtDecoder";
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         token: null,
-        company: null
+        empresaObj: null
     }),
     getters:{
-        isAuthenticated: (state) => !!state.token && isTokenValid(state.token),
-        companyLegalname: (state) => state.company ? `${state.company.nombreLegal}`: 'No Definido',
-        companyPlanes: (state) => state.company? state.company.planes : ['basic'],
-        companyObj: (state) => state.company
 
     },
     actions:{
@@ -20,11 +16,10 @@ export const useAuthStore = defineStore('auth', {
                 const response = await axios.post( `${import.meta.env.VITE_API_URL}/auth/login`,{ companyName, companyPassword})
 
                 this.token = response.data.token
-                this.company = decoderJWT(response.data.token)
+                this.empresaObj = decoderJWT(response.data.token)
 
                 localStorage.setItem('token', this.token)
                 axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
-
 
                 return true
                 
@@ -36,7 +31,7 @@ export const useAuthStore = defineStore('auth', {
 
         logout(){
             this.token = null
-            this.company = null
+            this.empresaObj = null
             localStorage.removeItem('token')
             delete axios.defaults.headers.common['Authorization']
             return true
@@ -47,13 +42,25 @@ export const useAuthStore = defineStore('auth', {
 
             if(token && isTokenValid(token)){
                 this.token = token
-                this.company = decoderJWT(token)
+                this.empresaObj = decoderJWT(token)
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
                 return true
             }
 
             return false
-        }
+        },
 
+        async comparePassword(password){
+            try {
+                await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, {
+                     companyName: this.empresaObj.nombreEmpresa, 
+                     companyPassword: password
+                    })
+                return true;
+            } catch (error) {
+                console.error("Error en la validacion de contraseña useAuthStore", error)
+                return false;
+            }
+        }
     }
 })

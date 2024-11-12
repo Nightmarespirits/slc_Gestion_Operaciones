@@ -1,5 +1,12 @@
 <template>
-    <form class="m-0 py-0">
+    <form class="m-0 py-0 p-0">
+        <!--Barra de progresion linear-->
+        <v-progress-linear
+          v-show="isLoading"
+          indeterminate
+          rounded
+          class="mt-2"
+        ></v-progress-linear>
         <v-container fluid class="my-0 py-0">
             <v-row class="my-0 py-0" align="center" justify="center">
                     <!-- Botón Nuevo -->
@@ -303,6 +310,7 @@ const maquinaItems = ref([])
 const colorItems = ref(['Rojo', 'Verde', 'Azul', 'Amarillo', 'Ninguno'])
 const dialog = ref(false)
 const details = ref([])
+const isLoading = ref(false);
 
 //datos de los campos
 const id = ref('')
@@ -502,23 +510,31 @@ const saveOrUpdateData = () => {
 }
 
 const guardarData = async(data) => {
+    isLoading.value = true; // Activa el indicador de carga
     try {
         const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos/`, data)
         emit('showAlert', response.data.message)
         emit('onRegAdded')            
     } catch (error) {
         console.error('Error al enviar datos:', error);
+    }finally{
+        isLoading.value = false; // Desactiva el indicador de carga
+        cleanForm()
     }
-    cleanForm()
+   
 }
 
 const actualizarData = async(data) => {
+    isLoading.value = true; // Activa el indicador de carga
     try {
         const response = await axios.put( `${import.meta.env.VITE_API_URL}/procesos/${id.value}`, data)
         emit('showAlert', response.data.message)
         emit('onRegAdded')            
     } catch (error) {
         console.error('Error al intentar Actualizar datos:', error);
+    }finally{
+        isLoading.value = false; // Desactiva el indicador de carga
+        cleanForm()
     }
 }
 const cargarSedes = async () => {
