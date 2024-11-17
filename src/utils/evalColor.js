@@ -5,13 +5,23 @@ export const evalColor = color => {
       case 'verde':
           return 'green'
       case 'azul':
-          return 'blue'
+          return 'indigo'
       case 'amarillo':
           return 'yellow'
+      case 'celeste':
+            return 'cyan-accent-2'
+      case 'blanco':
+        return 'white'
+      case 'naranja':
+        return 'orange-darken-2 '
+      case 'purple-darken-1':
+        return 'purple'
+      case 'rosado':
+        return 'pink-lighten-4  '
       case 'ninguno':
-            return 'withe'
+            return 'grey-lighten-3'
       default:
-          return ''
-
+          return 'grey-lighten-3'
+//'Ninguno','Rojo', 'Verde', 'Azul', 'Amarillo', 'Celeste', 'Blanco', 'Naranja', 'Morado', 'Rosado'
   }
 }

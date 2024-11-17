@@ -49,11 +49,13 @@
                 </v-col>
                 <v-col v-if="!isMobile" cols="6">
                     <v-chip 
+                    variant="elevated" 
+                    label  
+                    prepend-icon="mdi-pin"
                     v-for="detail in details" 
-                    variant="flat" 
                     class="ma-1" 
-                    size="small" 
-                    label>
+                    size="small"
+                    >
                     <v-icon class="pr-3">mdi-more</v-icon>
                     {{detail.numOrden }}
                     </v-chip>

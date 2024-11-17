@@ -63,8 +63,8 @@
                     </v-col>
                     <v-col v-if="!isMobile" cols="6">
                         <v-chip 
+                        variant="elevated"
                         v-for="detail in details" 
-                        variant="flat" 
                         class="ma-1" 
                         size="small" 
                         :color="evalColor(detail?.colorMarcado || '')"
@@ -204,7 +204,7 @@
                                     <td class="text-center">{{ item?.maquina?.nombre || '[Sin Agregar]' }}</td>
                                     <td class="text-center">{{ item?.cantidad || '[Sin Agregar]' }}</td>
                                     <td class="text-center">
-                                    <v-chip :color="evalColor(item?.colorMarcado || '[Sin Agregar]')" class="text-lowercase" size="large" label>
+                                    <v-chip variant="elevated" label  prepend-icon="mdi-pin" :color="evalColor(item?.colorMarcado || '[Sin Agregar]')" class="text-lowercase" >
                                         {{ item.colorMarcado || '[Sin Agregar]'}}
                                     </v-chip>
                                     </td>
@@ -307,7 +307,8 @@ const title = props.tipoProceso
 const sedeItems = ref([])
 const responsableItems = ref([])
 const maquinaItems = ref([])
-const colorItems = ref(['Rojo', 'Verde', 'Azul', 'Amarillo', 'Ninguno'])
+//Colores del select Marcadores
+const colorItems = ref(['Ninguno','Rojo', 'Verde', 'Azul', 'Amarillo', 'Celeste', 'Blanco', 'Naranja', 'Morado', 'Rosado'])
 const dialog = ref(false)
 const details = ref([])
 const isLoading = ref(false);

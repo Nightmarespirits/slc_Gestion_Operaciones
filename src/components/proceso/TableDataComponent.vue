@@ -116,7 +116,7 @@ onMounted(() => {
             v-for="detalle in item.detalles"
             :key="detalle.numOrden"
             :color="evalColor(detalle?.colorMarcado || '')"
-            variant="flat"
+            variant="elevated"
             class="ma-1"
             size="small"
             label
