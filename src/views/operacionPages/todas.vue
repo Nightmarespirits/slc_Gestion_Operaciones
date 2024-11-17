@@ -207,7 +207,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '../../store/auth';
 import axios from 'axios';
-
+import { dateTimeZConverter } from '../../utils/dateTimeZConverter';
 // Estados reactivos
 const authStore = useAuthStore()
 const formattedData = ref([]);
@@ -310,15 +310,15 @@ const formatOperacionesData = (operaciones) => {
         procesos: operacion.procesos?.map(proceso => ({
             id: proceso._id,
             tipo: proceso.tipo,
-            fecha: proceso.fecha,
+            fecha: dateTimeZConverter(proceso.fecha) || proceso.fecha,
             responsable: proceso.responsable ? 
                 `${proceso.responsable.nombres} ${proceso.responsable.apellidos}` : 
                 'No asignado'
         })),
         fechas: {
-            fecCreacion: operacion.createdAt || '',
-            inicio: operacion.fecInicio || '',
-            final: operacion.fecFinal || ''
+            fecCreacion: operacion?.createdAt || '',
+            inicio: dateTimeZConverter(operacion?.fecInicio) || operacion.fecInicio || '',
+            final: dateTimeZConverter(operacion?.fecFinal) || operacion.fecFinal || ''
         },
         estadoOperacion: operacion.estadoOperacion,
         currentStage: operacion.currentStage

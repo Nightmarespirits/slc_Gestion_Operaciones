@@ -8,6 +8,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useDisplay } from 'vuetify';
 import { evalColor } from '../../utils/evalColor';
+import { dateTimeZConverter } from '../../utils/dateTimeZConverter';
 // Usamos el helper 'useDisplay' para manejar breakpoints
 const { xs } = useDisplay();
 
@@ -129,7 +130,7 @@ onMounted(() => {
         </template>
 
         <template #item.fechaYHora="{ item }">
-          {{ `${item?.fecha || '[Editar]'} ${item?.hora || '[Editar]'}` }}
+          {{ ` ${dateTimeZConverter(item?.fecha) || (item?.fecha + ' ' + item?.hora) || '[Editar]'} `}}
         </template>
 
         <template #item.responsable="{ item }">

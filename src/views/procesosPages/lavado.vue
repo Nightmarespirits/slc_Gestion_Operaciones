@@ -222,8 +222,6 @@ const cargarRegistros = async () => {
             }
         })
         dataItems.value = response.data
-
-        console.log("items Todo: ", response.data)
     } catch (error) {
         console.error("Error al Cargar los datos de Registros" + error.mes)
     }
