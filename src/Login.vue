@@ -113,8 +113,8 @@ const authStore = useAuthStore();
 const apiStore = useTestApiStore();
 
 // Estado local
-const account = ref('');
-const password = ref('');
+const account = ref('demo');
+const password = ref('demo');
 const visible = ref(false);
 const loginStatus = ref('');
 
@@ -124,7 +124,7 @@ const msg = computed(() => {
     ? "Inicio de Sesión Exitoso"
     : loginStatus.value === false
     ? "No se pudo iniciar sesión. Compruebe sus credenciales."
-    : "";
+    : "MODO DEMO: Utilice usuario 'demo' y contraseña 'demo'";
 });
 
 // Manejador del inicio de sesión

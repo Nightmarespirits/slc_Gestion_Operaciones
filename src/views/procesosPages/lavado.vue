@@ -149,6 +149,7 @@ import axios from 'axios';
 import TableDataComponent from '../../components/proceso/TableDataComponent.vue';
 import FormComponent from '../../components/proceso/FormComponent.vue';
 import { mergeTableData } from '../../utils/mergeTableData.js';
+import { mockApiService } from '../../mockData/mockService.js';
 
 const title = ref('Lavado')
 
@@ -216,14 +217,12 @@ const evalColor = color => {
 
 const cargarRegistros = async () => {
     try {
-        const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos/filter`, {
-            params: {
-                tipo: title.value.toLowerCase()
-            }
-        })
-        dataItems.value = response.data
+        // Usar el servicio mock en lugar de la API real
+        const data = await mockApiService.getProcesos(title.value.toLowerCase());
+        dataItems.value = data;
+        console.log('Datos cargados (modo DEMO):', data);
     } catch (error) {
-        console.error("Error al Cargar los datos de Registros" + error.mes)
+        console.error("Error al Cargar los datos de Registros" + error.message);
     }
 }
 onMounted(()=>{

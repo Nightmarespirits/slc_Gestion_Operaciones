@@ -245,6 +245,7 @@ import { useField, useForm } from 'vee-validate';
 import axios from 'axios';
 import { useDisplay } from 'vuetify';
 import { evalColor } from '../../utils/evalColor';
+import { mockApiService } from '../../mockData/mockService.js';
 
 const { xs } = useDisplay();
 const isMobile = computed(() => xs.value);
@@ -513,35 +514,39 @@ const saveOrUpdateData = () => {
 const guardarData = async(data) => {
     isLoading.value = true; // Activa el indicador de carga
     try {
-        const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos/`, data)
-        emit('showAlert', response.data.message)
-        emit('onRegAdded')            
+        // Usar servicio mock en lugar de API real
+        const response = await mockApiService.createProceso(data);
+        emit('showAlert', 'Proceso creado exitosamente (MODO DEMO)');
+        emit('onRegAdded');
+        console.log('Proceso creado (MODO DEMO):', response);
     } catch (error) {
         console.error('Error al enviar datos:', error);
-    }finally{
+    } finally {
         isLoading.value = false; // Desactiva el indicador de carga
-        cleanForm()
+        cleanForm();
     }
-   
 }
 
 const actualizarData = async(data) => {
     isLoading.value = true; // Activa el indicador de carga
     try {
-        const response = await axios.put( `${import.meta.env.VITE_API_URL}/procesos/${id.value}`, data)
-        emit('showAlert', response.data.message)
-        emit('onRegAdded')            
+        // Usar servicio mock en lugar de API real
+        const response = await mockApiService.updateProceso(id.value, data);
+        emit('showAlert', 'Proceso actualizado exitosamente (MODO DEMO)');
+        emit('onRegAdded');
+        console.log('Proceso actualizado (MODO DEMO):', response);
     } catch (error) {
         console.error('Error al intentar Actualizar datos:', error);
-    }finally{
+    } finally {
         isLoading.value = false; // Desactiva el indicador de carga
-        cleanForm()
+        cleanForm();
     }
 }
 const cargarSedes = async () => {
     try {
-    	const response = await axios.get( `${import.meta.env.VITE_API_URL}/sede`);
-        sedeItems.value = response.data;
+        // Usar servicio mock en lugar de API real
+        const data = await mockApiService.getSedes();
+        sedeItems.value = data;
     } catch (error) {
         console.error('Error al cargar locales:', error);
     }
@@ -549,12 +554,12 @@ const cargarSedes = async () => {
 
 const cargarResponsables = async () => {
 	try {
-		const response = await axios.get( `${import.meta.env.VITE_API_URL}/empleado`)
-		responsableItems.value = response.data
+		// Usar servicio mock en lugar de API real
+		const data = await mockApiService.getResponsables();
+		responsableItems.value = data;
 	} catch (error) {
 		console.error('Error al cargar Responsables:', error);
 	}
-	
 };
 
 const cargarMaquinas = async (sedeID) => {
@@ -562,25 +567,20 @@ const cargarMaquinas = async (sedeID) => {
         let tipoMaquina = ''
         switch (title) {
             case 'Lavado':
-                tipoMaquina = 'Lavadora'
+                tipoMaquina = 'lavado'
                 break;
             case 'Secado':
-                tipoMaquina = 'Secadora'
+                tipoMaquina = 'secado'
                 break;
             case 'Planchado':
-                tipoMaquina = 'Plancha'
+                tipoMaquina = 'planchado'
                 break;
             default:
                 break;
         }
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/maquina/filter`, {
-            params:{
-                sede: sedeID,
-                tipo: tipoMaquina
-            }
-        })
-
-        maquinaItems.value = response.data
+        // Usar servicio mock en lugar de API real
+        const data = await mockApiService.getMaquinasByTipo(tipoMaquina);
+        maquinaItems.value = data;
     } catch (error) {
         console.error('Error al cargar maquinas:', error);
     }

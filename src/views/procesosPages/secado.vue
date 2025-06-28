@@ -177,6 +177,7 @@ import axios from 'axios';
 import TableDataComponent from '../../components/proceso/TableDataComponent.vue';
 import FormComponent from '../../components/proceso/FormComponent.vue';
 import { mergeTableData } from '../../utils/mergeTableData.js';
+import { mockApiService } from '../../mockData/mockService.js';
 
 const title = ref('Secado')
 
@@ -209,14 +210,14 @@ const openConfirmDialog = (item) => {
 }
 const doDeleteItem = async () => {
     try {
-        const response = await axios.delete(`${import.meta.env.VITE_API_URL}/procesos/${itemID.value}`)
+        await mockApiService.deleteProceso(itemID.value);
         confirmDialog.value = false;
-        cargarRegistros()
-        activeAlert(response.data.message)
+        activeAlert('Registro eliminado exitosamente (MODO DEMO)');
+        cargarRegistros();
     } catch (error) {
         console.error('Error al intentar eliminar datos:', error);
+        activeAlert('Error al eliminar el registro (MODO DEMO)');
     }
-    
 }
 //Datos para el modo ver Registro de proceso
 const operacionID = ref('')
@@ -260,14 +261,9 @@ const evalColor = color => {
 
 const cargarRegistros = async () => {
     try {
-        const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos/filter`, {
-            params: {
-                tipo: title.value.toLowerCase()
-            }
-        })
-        dataItems.value = response.data || []
+        const data = await mockApiService.getProcesos(title.value.toLowerCase());
+        dataItems.value = data || [];
     } catch (error) {
-        activeAlert(response.data.message)
         console.error("Error al Cargar los datos de Registros de Secado" ,  error)
     }
 }

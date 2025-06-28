@@ -177,6 +177,7 @@ import axios from 'axios';
 import TableDataComponent from '../../components/proceso/TableDataComponent.vue';
 import PM_FormComponent from '../../components/proceso/PM_FormComponent.vue';
 import { mergeTableData } from '../../utils/mergeTableData.js';
+import { mockApiService } from '../../mockData/mockService.js';
 
 const title = ref('Teñido')
 
@@ -209,11 +210,12 @@ const openConfirmDialog = (item) => {
 }
 const doDeleteItem = async () => {
     try {
-        const response = await axios.delete(`${import.meta.env.VITE_API_URL}/procesos/${itemID.value}`)
+        await mockApiService.deleteProceso(itemID.value);
         confirmDialog.value = false;
-        activeAlert(response.data.message)
+        activeAlert('Registro eliminado exitosamente (MODO DEMO)');
     } catch (error) {
         console.error('Error al intentar eliminar datos:', error);
+        activeAlert('Error al eliminar el registro (MODO DEMO)');
     }
     cargarRegistros()
 }
@@ -259,12 +261,8 @@ const evalColor = color => {
 
 const cargarRegistros = async () => {
     try {
-        const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos/filter`, {
-            params: {
-                tipo: 'tenido'
-            }
-        })
-        dataItems.value = response.data
+        const data = await mockApiService.getProcesos('tenido');
+        dataItems.value = data;
     } catch (error) {
         console.error("Error al Cargar los datos de Registros" + error)
     }

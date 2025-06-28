@@ -206,7 +206,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '../../store/auth';
-import axios from 'axios';
+import { mockApiService } from '../../mockData/mockService.js';
 import { dateTimeZConverter } from '../../utils/dateTimeZConverter';
 // Estados reactivos
 const authStore = useAuthStore()
@@ -354,33 +354,26 @@ const openConfirmDialog = (item) => {
 }
 //Fucion para eliminar Operacion
 const doDeleteItem = async () => {
-    if(await authStore.comparePassword(confirmPassword.value)){
-        try {
-            const response = await axios.delete(`${import.meta.env.VITE_API_URL}/operacion/${operacionID.value}`)
-            confirmDialog.value = false;
-            activeAlert(response.data.message)
-            confirmPassword.value = ''
-            cargarRegistros()
-
-        } catch (error) {
-            console.error('Error al intentar eliminar datos:', error);
-        }
-    }else{
+    // En modo DEMO, no se necesita contraseña para eliminar.
+    try {
+        await mockApiService.deleteOperacion(operacionID.value);
         confirmDialog.value = false;
-        activeAlert("Contraseña Incorrecta, No se Elimino el Registro")
-        confirmPassword.value = ''
+        activeAlert('Operación eliminada exitosamente (MODO DEMO)');
+        confirmPassword.value = '';
+        cargarRegistros();
+    } catch (error) {
+        console.error('Error al intentar eliminar datos:', error);
+        activeAlert('Error al eliminar la operación (MODO DEMO)');
     }
-    
-    
-}
+};
 // Función para cargar los datos
 const cargarRegistros = async () => {
     try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/operacion/estado/${false}`);
-        formattedData.value = formatOperacionesData(response.data);
+        const data = await mockApiService.getOperacionesPorEstado(false);
+        formattedData.value = formatOperacionesData(data);
     } catch (error) {
         console.error("Error al Cargar los datos de Registros:", error);
-        activeAlert('Error al cargar los datos');
+        activeAlert('Error al cargar los datos (MODO DEMO)');
     }
 };
 

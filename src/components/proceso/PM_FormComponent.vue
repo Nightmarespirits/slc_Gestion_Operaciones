@@ -191,6 +191,7 @@ import { ref , defineProps, defineEmits, onMounted, computed, watch, nextTick} f
 import { useField, useForm } from 'vee-validate';
 import axios from 'axios';
 import { useDisplay } from 'vuetify';
+import { mockApiService } from '../../mockData/mockService.js';
 
 const { xs } = useDisplay();
 const isMobile = computed(() => xs.value);
@@ -429,48 +430,48 @@ const saveOrUpdateData = () => {
 const guardarData = async(data) => {
     isLoading.value = true; // Activa el indicador de carga
     try {
-        const response = await axios.post( `${import.meta.env.VITE_API_URL}/procesos/`, data)
-        emit('showAlert', response.data.message)
-        emit('onRegAdded')            
+        await mockApiService.createProceso(data);
+        emit('showAlert', 'Registro guardado exitosamente (MODO DEMO)');
+        emit('onRegAdded');
     } catch (error) {
         console.error('Error al enviar datos:', error);
-    }finally{
-        cleanForm()
-        isLoading.value=false; //Desactiva el indicador de carga
+        emit('showAlert', 'Error al guardar el registro (MODO DEMO)');
+    } finally {
+        cleanForm();
+        isLoading.value = false; // Desactiva el indicador de carga
     }
-   
 }
 
 const actualizarData = async(data) => {
     isLoading.value = true;
     try {
-        const response = await axios.put( `${import.meta.env.VITE_API_URL}/procesos/${id.value}`, data)
-        emit('showAlert', response.data.message)
-        emit('onRegAdded')            
+        await mockApiService.updateProceso(id.value, data);
+        emit('showAlert', 'Registro actualizado exitosamente (MODO DEMO)');
+        emit('onRegAdded');
     } catch (error) {
         console.error('Error al intentar Actualizar datos:', error);
-    }finally{
-        cleanForm()
+        emit('showAlert', 'Error al actualizar el registro (MODO DEMO)');
+    } finally {
+        cleanForm();
         isLoading.value = false;
     }
 }
 const cargarSedes = async () => {
     try {
-    	const response = await axios.get( `${import.meta.env.VITE_API_URL}/sede`);
-        sedeItems.value = response.data;
+        const data = await mockApiService.getSedes();
+        sedeItems.value = data;
     } catch (error) {
         console.error('Error al cargar locales:', error);
     }
 };
 
 const cargarResponsables = async () => {
-	try {
-		const response = await axios.get( `${import.meta.env.VITE_API_URL}/empleado`)
-		responsableItems.value = response.data
-	} catch (error) {
-		console.error('Error al cargar Responsables:', error);
-	}
-	
+    try {
+        const data = await mockApiService.getResponsables();
+        responsableItems.value = data;
+    } catch (error) {
+        console.error('Error al cargar Responsables:', error);
+    }
 };
 
 onMounted(()=>{
