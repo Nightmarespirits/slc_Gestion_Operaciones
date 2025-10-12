@@ -90,6 +90,7 @@
                         <th class="text-center">CONTEO</th>
                         <th class="text-center">IDENTIFICADOR</th>
                         <th class="text-center">OBSERVACIONES</th>
+                        <th class="text-center">ESTADO</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -119,6 +120,18 @@
                             </v-chip>
                         </td>
                         <td class="text-center">{{item.obs}}</td>
+                        <td class="text-center">
+                            <v-chip :color="item?.estado ? 'green' : 'red'"
+                                :text="item?.estado ? 'Finalizado' : 'Pendiente'"
+                                class="text-uppercase" size="small" label>
+                                <template #prepend>
+                                    <v-icon size="small" class="pr-2">
+                                        {{ item?.estado ? 'mdi-checkbox-marked-circle-outline' :
+                                            'mdi-clock-outline' }}
+                                    </v-icon>
+                                </template>
+                            </v-chip>
+                        </td>
                         </tr>
                     </tbody>
                 </v-table>
@@ -175,6 +188,7 @@ import axios from 'axios';
 import TableDataComponent from '../../components/proceso/TableDataComponent.vue';
 import FormComponent from '../../components/proceso/FormComponent.vue';
 import { mergeTableData } from '../../utils/mergeTableData.js';
+import procesoService from '../../services/procesoService.js';
 
 const title = ref('Planchado')
  
@@ -257,14 +271,19 @@ const evalColor = color => {
 
 const cargarRegistros = async () => {
     try {
-        const response = await axios.get( `${import.meta.env.VITE_API_URL}/procesos/filter`, {
-            params: {
-                tipo: title.value.toLowerCase()
-            }
-        })
-        dataItems.value = response.data
+        const result = await procesoService.getFilteredProcesos({
+            tipo: title.value.toLowerCase()
+        });
+        
+        if (result.success) {
+            dataItems.value = result.data;
+        } else {
+            console.error("Error al cargar los datos de registros:", result.error);
+            activeAlert(result.error);
+        }
     } catch (error) {
-        console.error("Error al Cargar los datos de Registros" + error)
+        console.error("Error inesperado al cargar los datos de registros:", error);
+        activeAlert('Error al cargar los registros');
     }
 }
 onMounted(()=>{

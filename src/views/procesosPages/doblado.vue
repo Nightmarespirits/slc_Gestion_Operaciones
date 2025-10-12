@@ -75,8 +75,8 @@
                                 <td class="text-center">{{ item?.obs || '[Editar]' }}</td>
                                 <td class="text-center">
                                     <v-chip :color="item?.estado ? 'green' : 'red'"
-                                        :text="item?.estado ? 'Finalizado' : 'Pendiente'"
-                                        class="text-uppercase" size="small" label>
+                                        :text="item?.estado ? 'Finalizado' : 'Pendiente'" class="text-uppercase"
+                                        size="small" label>
                                         <template #prepend>
                                             <v-icon size="small" class="pr-2">
                                                 {{ item?.estado ? 'mdi-checkbox-marked-circle-outline' :

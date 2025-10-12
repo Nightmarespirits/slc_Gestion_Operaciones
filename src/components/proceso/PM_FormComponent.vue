@@ -194,21 +194,6 @@
                     </v-col>
                     <v-col cols="12" sm="3" md="3">
                         <v-checkbox class="ma-0 pa-0" v-model="estado" :label="`${estado ? 'Finalizado' : 'Pendiente'}`"></v-checkbox>
-                        <!-- Real-time process status indicator -->
-                        <v-chip 
-                            v-if="details.length > 0"
-                            :color="processStatusColor"
-                            :prepend-icon="processStatusIcon"
-                            size="small"
-                            variant="elevated"
-                            class="mt-2"
-                        >
-                            {{ processStatus.statusText }}
-                            <v-tooltip activator="parent" location="top">
-                                {{ processStatus.completedCount }}/{{ processStatus.totalCount }} detalles completados
-                                ({{ processStatus.completionPercentage }}%)
-                            </v-tooltip>
-                        </v-chip>
                     </v-col>
                 </v-row>
             </v-card>
