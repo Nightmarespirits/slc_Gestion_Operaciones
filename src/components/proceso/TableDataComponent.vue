@@ -61,6 +61,44 @@ const btnEditClicked = (item) => {
   emit('onEditItem', item)
 }
 
+// Helper functions for detail-level status management
+const getProcessStatus = (item) => {
+  // Use computed status if available, otherwise fall back to original status
+  if (item.estadoCalculado !== undefined) {
+    return item.estadoCalculado;
+  }
+  
+  // If no details exist, use the original process status
+  if (!item.detalles || item.detalles.length === 0) {
+    return item.estado;
+  }
+  
+  // Calculate status based on detail completion
+  return item.detalles.every(detail => detail.estado === true);
+}
+
+const getCompletedDetailsCount = (item) => {
+  if (!item.detalles || item.detalles.length === 0) {
+    return 0;
+  }
+  return item.detalles.filter(detail => detail.estado === true).length;
+}
+
+const getCompletionRatioColor = (item) => {
+  if (!item.detalles || item.detalles.length === 0) {
+    return 'grey';
+  }
+  
+  const completedCount = getCompletedDetailsCount(item);
+  const totalCount = item.detalles.length;
+  const ratio = completedCount / totalCount;
+  
+  if (ratio === 1) return 'green';
+  if (ratio >= 0.7) return 'orange';
+  if (ratio >= 0.3) return 'yellow';
+  return 'red';
+}
+
 // Detectar cambio de tamaño de pantalla para activar vista móvil
 onMounted(() => {
   window.addEventListener('resize', () => {
@@ -138,19 +176,39 @@ onMounted(() => {
         </template>
 
         <template #item.estado="{ item }">
-          <v-chip
-            :color="item?.estado ? 'green' : 'red'"
-            :text="item?.estado ? 'Finalizado' : 'Pendiente'"
-            class="text-uppercase"
-            size="small"
-            label
-          >
-          <template #prepend>
+          <div class="d-flex align-center">
+            <v-chip
+              :color="getProcessStatus(item) ? 'green' : 'red'"
+              :text="getProcessStatus(item) ? 'Finalizado' : 'Pendiente'"
+              class="text-uppercase"
+              size="small"
+              label
+            >
+              <template #prepend>
                 <v-icon size="small" class="pr-3">
-                    {{ item.estado ? 'mdi-checkbox-marked-circle-outline' : 'mdi-clock-outline' }}
+                  {{ getProcessStatus(item) ? 'mdi-checkbox-marked-circle-outline' : 'mdi-clock-outline' }}
                 </v-icon>
-            </template>
-        </v-chip>
+              </template>
+            </v-chip>
+            
+            <v-tooltip 
+              v-if="item.detalles && item.detalles.length > 0"
+              :text="`${getCompletedDetailsCount(item)}/${item.detalles.length} detalles completados`"
+              location="top"
+            >
+              <template v-slot:activator="{ props }">
+                <v-chip
+                  v-bind="props"
+                  :color="getCompletionRatioColor(item)"
+                  variant="outlined"
+                  size="x-small"
+                  class="ml-2"
+                >
+                  {{ getCompletedDetailsCount(item) }}/{{ item.detalles.length }}
+                </v-chip>
+              </template>
+            </v-tooltip>
+          </div>
         </template>
 
         <template #item.acciones="{ item }">

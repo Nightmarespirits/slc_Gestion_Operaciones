@@ -158,6 +158,7 @@
                                     <th class="text-center">N° ORDEN</th>
                                     <th class="text-center">CONTEO</th>
                                     <th class="text-center">OBSERVACIONES</th>
+                                    <th class="text-center">ESTADO</th>
                                     <th class="text-center">ACCIONES</th>
                                 </tr>
                                 </thead>
@@ -166,6 +167,19 @@
                                     <td class="text-center">{{ item?.numOrden || '[Sin agregar]'}}</td>
                                     <td class="text-center">{{ item?.cantidad || '[Sin Agregar]' }}</td>
                                     <td class="text-center">{{ item?.obs || '[Sin Agregar]' }}</td>
+                                    <td class="text-center">
+                                        <v-chip 
+                                            :color="item.estado ? 'success' : 'error'"
+                                            :prepend-icon="item.estado ? 'mdi-check-circle' : 'mdi-circle-outline'"
+                                            size="small"
+                                            variant="elevated"
+                                            :class="editionMode ? 'cursor-pointer' : ''"
+                                            @click="editionMode ? toggleDetailStatus(item) : null"
+                                            :loading="item.updating"
+                                        >
+                                            {{ item.estado ? 'Completado' : 'Pendiente' }}
+                                        </v-chip>
+                                    </td>
                                     <td class="text-center">
                                     <v-btn variant="plain" icon="mdi-pencil" @click="fillDetail(item)" color="blue-darken-1"></v-btn>
                                     <v-btn variant="plain" icon="mdi-delete" @click="deleteDetail(item)" color="red-darken-1"></v-btn>
@@ -180,6 +194,21 @@
                     </v-col>
                     <v-col cols="12" sm="3" md="3">
                         <v-checkbox class="ma-0 pa-0" v-model="estado" :label="`${estado ? 'Finalizado' : 'Pendiente'}`"></v-checkbox>
+                        <!-- Real-time process status indicator -->
+                        <v-chip 
+                            v-if="details.length > 0"
+                            :color="processStatusColor"
+                            :prepend-icon="processStatusIcon"
+                            size="small"
+                            variant="elevated"
+                            class="mt-2"
+                        >
+                            {{ processStatus.statusText }}
+                            <v-tooltip activator="parent" location="top">
+                                {{ processStatus.completedCount }}/{{ processStatus.totalCount }} detalles completados
+                                ({{ processStatus.completionPercentage }}%)
+                            </v-tooltip>
+                        </v-chip>
                     </v-col>
                 </v-row>
             </v-card>
@@ -191,9 +220,28 @@ import { ref , defineProps, defineEmits, onMounted, computed, watch, nextTick} f
 import { useField, useForm } from 'vee-validate';
 import axios from 'axios';
 import { useDisplay } from 'vuetify';
+import { calculateProcessStatus, getStatusColor, getStatusIcon } from '@/utils/processStatusUtils';
+import procesoService from '../../services/procesoService.js';
 
 const { xs } = useDisplay();
 const isMobile = computed(() => xs.value);
+
+// Computed properties for real-time process status calculation
+const processStatus = computed(() => {
+    return calculateProcessStatus(details.value);
+});
+
+const processStatusColor = computed(() => {
+    return getStatusColor(processStatus.value);
+});
+
+const processStatusIcon = computed(() => {
+    return getStatusIcon(processStatus.value);
+});
+
+const shouldAutoCompleteProcess = computed(() => {
+    return processStatus.value.estado && !estado.value;
+});
 //Props
 const props = defineProps({
     tipoProceso:{
@@ -314,6 +362,26 @@ watch(() => details.value,
 },
 { deep: true, immediate: true });
 
+// Watcher for automatic process status updates based on detail completion
+watch(() => processStatus.value, 
+(newStatus) => {
+    // Auto-complete process when all details are completed
+    if (newStatus.estado && !estado.value && details.value.length > 0) {
+        estado.value = true;
+        console.log('Process auto-completed: all details finished');
+    }
+    // Auto-set to pending when not all details are completed
+    else if (!newStatus.estado && estado.value && details.value.length > 0) {
+        // Only auto-set to pending if user hasn't manually set it to completed
+        // This prevents overriding manual completion
+        if (shouldAutoCompleteProcess.value === false) {
+            estado.value = false;
+            console.log('Process set to pending: not all details finished');
+        }
+    }
+},
+{ deep: true, immediate: true });
+
 
 //Control de DialogoDetails (fullScreen)
 const canOpenDialog = () => {
@@ -353,6 +421,7 @@ const appendDetail = (values) => {
     numOrden: values.numOrden,
     cantidad: values.cantidad,
     obs: values.obs,
+    estado: false // Default status for new details
   };
   details.value.unshift(detail);
 
@@ -362,15 +431,21 @@ const appendDetail = (values) => {
 const updateDetail = (values) => {
     const index = details.value.findIndex(obj => (obj?.id ?? obj?._id ?? '') === detailEditingId.value);
     
+    if (index === -1) return; // Detail not found
+    
     // Crear una copia del array
     const updatedDetails = [...details.value];
+    const existingDetail = updatedDetails[index];
     
-    // Actualizar el elemento específico
+    // Actualizar el elemento específico preservando el estado existente
     updatedDetails[index] = {
+        ...existingDetail, // Preserve existing properties including _id and estado
         id: detailEditingId.value,
         numOrden: values.numOrden,
         cantidad: values.cantidad,
         obs: values.obs,
+        // Preserve existing estado or default to false if not present
+        estado: existingDetail.estado !== undefined ? existingDetail.estado : false
     };
     
     // Asignar el nuevo array
@@ -499,4 +574,52 @@ const cleanDetailsForm = () => {
     detailIsEditing.value = false
     detailBtnAppendOrUpdate.value = 'Agregar'
 }
+
+const toggleDetailStatus = async (detail) => {
+    if (!editionMode.value || detail.updating) return;
+    
+    const originalStatus = detail.estado;
+    const newStatus = !originalStatus;
+    
+    // Optimistic UI update
+    detail.updating = true;
+    detail.estado = newStatus;
+    
+    try {
+        const result = await procesoService.updateDetailStatus(
+            id.value,
+            detail._id,
+            newStatus
+        );
+        
+        if (result.success) {
+            // Update successful, emit event to parent to refresh data
+            emit('showAlert', result.message);
+            emit('onRegAdded'); // This will refresh the main table
+        } else {
+            // Rollback optimistic update on error
+            detail.estado = originalStatus;
+            emit('showAlert', result.error);
+        }
+        
+    } catch (error) {
+        // Rollback optimistic update on error
+        detail.estado = originalStatus;
+        console.error('Unexpected error updating detail status:', error);
+        emit('showAlert', 'Error inesperado al actualizar el estado del detalle');
+    } finally {
+        detail.updating = false;
+    }
+};
 </script>
+<style scoped>
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-pointer:hover {
+    opacity: 0.8;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+}
+</style>
