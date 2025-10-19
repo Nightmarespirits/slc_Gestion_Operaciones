@@ -15,12 +15,12 @@
         elevation="5"
         max-width="380"
         rounded="lg"
-        :disabled="!apiStore.stateAPI"  
+        :disabled="false"  
 
       >
         <!-- Progress bar que se muestra solo durante la carga -->
         <v-progress-linear
-          v-if="!apiStore.stateAPI"
+          v-if="false"
           indeterminate
           color="blue"
           class="mb-0"

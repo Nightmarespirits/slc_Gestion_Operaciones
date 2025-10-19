@@ -13,8 +13,8 @@ const AppRoutes = {
             component: () => import('../views/home.vue'),
         },
         OperacionesRoutes,
-        ProcesosRoutes,
-        ConfigRoutes
+        //ProcesosRoutes,
+        //ConfigRoutes
     ]
 }
 

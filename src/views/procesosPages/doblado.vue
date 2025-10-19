@@ -8,90 +8,17 @@
         </v-alert>
 
         <!--formulario-->
-        <PM_FormComponent @showAlert="activeAlert" @onRegAdded="cargarRegistros" :tipoProceso="title"
+        <PM_FormComponent @showAlert="activeAlert" :tipoProceso="title"
             :selectedItem="selectedItem">
         </PM_FormComponent>
 
-        <!--Dialog Component (Ver proceso)-->
-        <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
-            <v-card>
-                <v-toolbar>
-                    <v-btn icon="mdi-close" @click="dialog = false"></v-btn>
-
-                    <v-toolbar-title>Proceso {{ procesoID }} </v-toolbar-title>
-
-                    <v-spacer></v-spacer>
-
-                    <v-toolbar-items>
-                        <v-btn text="Cerrar" variant="text" @click="dialog = false"></v-btn>
-                    </v-toolbar-items>
-                </v-toolbar>
-                <!--Contenido de el Dialog-->
-                <v-container>
-                    <v-row>
-                        <v-col cols="12" sm="6" md="6" lg="3">
-                            <p class="text-h5 my-6">Operación ID:</p>
-                            <p>{{ operacionID }}</p>
-                        </v-col>
-
-                        <v-col cols="12" sm="6" md="6" lg="3">
-                            <p class="text-h5 my-6">Responsable:</p>
-                            <p>{{ procesoResponsable }}</p>
-                        </v-col>
-
-                        <v-col cols="12" sm="6" md="6" lg="3">
-                            <p class="text-h5 my-6">Local:</p>
-                            <p>{{ procesoSede }}</p>
-                        </v-col>
-
-                        <v-col cols="12" sm="6" md="6" lg="3">
-                            <p class="text-h5 my-6">Estado del Proceso:</p>
-                            <div>
-                                Proceso
-                                <v-chip :color="procesoEstado ? 'green' : 'red'"
-                                    :text="procesoEstado ? 'Finalizado' : 'Pendiente'" class="text-uppercase"
-                                    size="small" label></v-chip>
-                            </div>
-                        </v-col>
-                    </v-row>
-
-
-                    <p class="text-h5 my-6 ">Detalles de Proceso</p>
-                    <v-table>
-
-                        <thead>
-                            <tr>
-                                <th class="text-center">N° ORDEN</th>
-                                <th class="text-center">CONTEO</th>
-                                <th class="text-center">OBSERVACIONES</th>
-                                <th class="text-center">ESTADO</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(item) in details" :key="item.numOrden">
-                                <!-- NUMORDEN con rowspan-->
-                                <td>{{ item?.numOrden || '[Editar]' }}</td>
-                                <td class="text-center">{{ item?.cantidad || '[Editar]' }}</td>
-                                <td class="text-center">{{ item?.obs || '[Editar]' }}</td>
-                                <td class="text-center">
-                                    <v-chip :color="item?.estado ? 'green' : 'red'"
-                                        :text="item?.estado ? 'Finalizado' : 'Pendiente'" class="text-uppercase"
-                                        size="small" label>
-                                        <template #prepend>
-                                            <v-icon size="small" class="pr-2">
-                                                {{ item?.estado ? 'mdi-checkbox-marked-circle-outline' :
-                                                    'mdi-clock-outline' }}
-                                            </v-icon>
-                                        </template>
-                                    </v-chip>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </v-table>
-                </v-container>
-                <!--Fin de contenido del Dialog-->
-            </v-card>
-        </v-dialog>
+        <!--Optimized Details Modal-->
+        <OptimizedProcesoDetailsModal
+        v-model="dialog"
+        :proceso-id="procesoID"
+        :proceso-data="procesoData"
+        @proceso-updated="handleProcesoUpdated"
+        />
         <!--Fin del Dialog Component-->
 
         <!--Confirm Dialog COMPONENT-->
@@ -113,10 +40,10 @@
         </v-dialog>
         <!--Fin del Confirm Dialog COMPONENT-->
 
-        <!--Tabla Procesos-->
-        <TableDataComponent @onFullscreenItem="showDetails" @onEditItem="handleItemSelected"
-            @onDeleteItem="openConfirmDialog" :title="title" :dataHeaders="dataHeaders" :dataItems="dataItems">
-        </TableDataComponent>
+        <!--Tabla Procesos Optimizada-->
+        <OptimizedProcesoTable @onFullscreenItem="showDetails" @onEditItem="handleItemSelected"
+            @onDeleteItem="openConfirmDialog" :title="title">
+        </OptimizedProcesoTable>
         <!--Fin de la tabla procesos -->
 
     </v-container>
@@ -126,7 +53,8 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import axios from 'axios';
-import TableDataComponent from '../../components/proceso/TableDataComponent.vue';
+import OptimizedProcesoTable from '../../components/proceso/OptimizedProcesoTable.vue';
+import OptimizedProcesoDetailsModal from '../../components/proceso/OptimizedProcesoDetailsModal.vue';
 import PM_FormComponent from '../../components/proceso/PM_FormComponent.vue';
 import procesoService from '../../services/procesoService.js';
 
@@ -142,14 +70,6 @@ const confirmDialog = ref(false)
 const itemID = ref('')
 const alert = ref(false)
 const alertMsg = ref('')
-const dataItems = ref([])
-const dataHeaders = [
-    { align: 'start', key: 'detalles', title: 'N° Orden (Tickets)' },
-    { align: 'center', key: 'fechaYHora', title: 'Fecha y Hora' },
-    { align: 'center', key: 'responsable', title: 'Responsable' },
-    { align: 'center', key: 'estado', title: 'Estado' },
-    { align: 'center', key: 'acciones', title: 'Acciones', width: '250px' }
-]
 
 //del boton editar
 const handleItemSelected = (item) => {
@@ -167,7 +87,7 @@ const doDeleteItem = async () => {
     } catch (error) {
         console.error('Error al intentar eliminar datos:', error);
     }
-    cargarRegistros()
+    // Data will be automatically refreshed by the OptimizedProcesoTable component
 }
 //Datos para el modo ver Registro de proceso
 const operacionID = ref('')
@@ -177,14 +97,14 @@ const procesoID = ref('')
 const procesoEstado = ref(false)
 //Del boton ver detalles
 const showDetails = (item) => {
-    operacionID.value = item?.operacion || '[Editar]'
-    procesoResponsable.value = `${item?.responsable?.apellidos || '[Editar]'} ${item?.responsable?.nombres || '[Editar]'} `
-    procesoSede.value = item?.sede?.nombre || 'Editar'
-    procesoID.value = item?._id || 'Editar'
-    procesoEstado.value = item?.estado
+    procesoID.value = item?._id || item?.id || 'Editar'
     procesoData.value = item
-    details.value = item.detalles
     dialog.value = true
+}
+
+const handleProcesoUpdated = (updatedProceso) => {
+    procesoData.value = updatedProceso
+    // The OptimizedProcesoTable will automatically refresh its data
 }
 const activeAlert = (msg) => {
     alertMsg.value = msg
@@ -211,25 +131,11 @@ const evalColor = color => {
 
 // Removed toggleDetailStatus function - detail status editing is now handled in PM_FormComponent
 
-const cargarRegistros = async () => {
-    try {
-        const result = await procesoService.getFilteredProcesos({
-            tipo: title.value.toLowerCase()
-        });
+// Data loading is now handled by OptimizedProcesoTable component
+// No need for manual cargarRegistros function
 
-        if (result.success) {
-            dataItems.value = result.data;
-        } else {
-            console.error("Error al cargar los datos de registros:", result.error);
-            activeAlert(result.error);
-        }
-    } catch (error) {
-        console.error("Error inesperado al cargar los datos de registros:", error);
-        activeAlert('Error al cargar los registros');
-    }
-}
 onMounted(() => {
-    cargarRegistros()
+    // Component initialization if needed
 })
 </script>
 
