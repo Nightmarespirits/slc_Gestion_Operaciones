@@ -169,7 +169,7 @@ class ProcesoService {
      * @returns {Promise<Object>} Process data with calculated status
      */
     async getProcesoWithStatus(procesoId) {
-        const apiCall = () => this.api.get(`/procesos/${procesoId}`);
+        const apiCall = () => this.api.get(`/procesos/get/${procesoId}`);
 
         try {
             const response = await this.withRetry(apiCall);

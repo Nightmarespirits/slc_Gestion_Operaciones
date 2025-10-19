@@ -52,7 +52,7 @@
                 ref="dataTableRef"
                 :fetch-function="fetchOperaciones"
                 :headers="dataHeaders"
-                :initial-limit="50"
+                :initial-limit="20"
                 :load-more-limit="50"
                 title="Operaciones"
                 search-placeholder="Buscar por N° de Orden..."

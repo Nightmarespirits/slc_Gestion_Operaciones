@@ -123,30 +123,56 @@ export function useLazyLoading(options = {}) {
 
       const response = await fetchFunction(params)
       
-      if (response && response.data) {
-        const newItems = Array.isArray(response.data) ? response.data : []
-        
-        if (resetPagination) {
-          state.items = newItems
-        } else {
-          state.items.push(...newItems)
-        }
-
-        // Actualizar paginación
-        state.pagination.total = response.total || newItems.length
-        state.pagination.hasMore = newItems.length === state.pagination.limit
-        state.lastFetch = Date.now()
-
-        // Guardar en cache
-        if (resetPagination) {
-          saveToCache(cacheKey, {
-            items: state.items,
-            pagination: state.pagination
-          })
-        }
-
-        return response
+      // Validar respuesta
+      if (!response) {
+        console.warn('useLazyLoading: respuesta vacía de fetchFunction');
+        return { data: [], total: 0, hasMore: false };
       }
+      
+      // Manejar diferentes estructuras de respuesta
+      let newItems = [];
+      let total = 0;
+      let hasMore = false;
+      
+      if (response.data) {
+        newItems = Array.isArray(response.data) ? response.data : [];
+        total = response.total || newItems.length;
+        hasMore = response.hasMore || (newItems.length === state.pagination.limit);
+      } else if (Array.isArray(response)) {
+        newItems = response;
+        total = newItems.length;
+        hasMore = newItems.length === state.pagination.limit;
+      } else {
+        console.warn('useLazyLoading: estructura de respuesta no reconocida:', response);
+        newItems = [];
+        total = 0;
+        hasMore = false;
+      }
+      
+      if (resetPagination) {
+        state.items = newItems
+      } else {
+        state.items.push(...newItems)
+      }
+
+      // Actualizar paginación con valores seguros
+      state.pagination.total = total;
+      state.pagination.hasMore = hasMore;
+      state.lastFetch = Date.now();
+
+      // Guardar en cache
+      if (resetPagination) {
+        saveToCache(cacheKey, {
+          items: state.items,
+          pagination: state.pagination
+        })
+      }
+
+      return {
+        data: newItems,
+        total: total,
+        hasMore: hasMore
+      };
     } catch (error) {
       console.error('Error en loadInitial:', error)
       state.error = error.message || 'Error al cargar datos'

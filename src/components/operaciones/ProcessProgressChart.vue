@@ -132,14 +132,14 @@ const getChartOption = () => {
           length: 15,
           length2: 10
         },
-        data: props.data.map(item => ({
-          name: item.name,
-          value: item.value,
+        data: props.data.filter(item => item && item.name).map(item => ({
+          name: item.name || 'Sin nombre',
+          value: typeof item.value === 'number' ? item.value : 0,
           itemStyle: {
-            color: item.color || getDefaultColor(item.name)
+            color: item.color || getDefaultColor(item.name || 'default')
           },
-          responsable: item.responsable,
-          fecha: item.fecha
+          responsable: item.responsable || 'No asignado',
+          fecha: item.fecha || new Date().toISOString()
         }))
       }
     ],

@@ -5,6 +5,7 @@
     scrollable
     persistent
     transition="dialog-transition"
+    :attach="false"
   >
     <v-card class="operacion-detail-modal">
       <!-- Header -->
@@ -214,15 +215,15 @@ const dialog = computed({
 })
 
 const chartData = computed(() => {
-  if (!operacion.value?.procesos) return []
+  if (!operacion.value?.procesos || !Array.isArray(operacion.value.procesos)) return []
   
   return operacion.value.procesos.map(proceso => ({
-    name: proceso.tipo,
+    name: proceso.tipo || 'Proceso sin nombre',
     value: calculateProcesoProgress(proceso),
     color: getProcesoColor(proceso.tipo),
-    responsable: proceso.responsable,
-    fecha: proceso.fecha
-  }))
+    responsable: proceso.responsable || 'No asignado',
+    fecha: proceso.fecha || new Date().toISOString()
+  })).filter(item => item.name && typeof item.value === 'number')
 })
 
 // Methods
@@ -231,7 +232,33 @@ const loadOperacionDetails = async () => {
   
   loading.value = true
   try {
-    operacion.value = await operacionesStore.fetchOperacionDetails(props.operacionId)
+    // Primero intentar obtener de caché
+    let operacionData = operacionesStore.getById(props.operacionId)
+    
+    if (!operacionData || !operacionData.hasFullDetails) {
+      // Si no está en caché o no tiene detalles completos, cargar desde API
+      operacionData = await operacionesStore.fetchOperacionDetails(props.operacionId)
+    }
+    
+    // Asegurar estructura de datos válida
+    operacion.value = {
+      id: operacionData.id,
+      ordenes: operacionData.ordenes || [],
+      procesos: Array.isArray(operacionData.procesos) ? operacionData.procesos.map(proceso => ({
+        id: proceso.id,
+        tipo: proceso.tipo || 'Proceso sin nombre',
+        responsable: proceso.responsable || 'No asignado',
+        fecha: proceso.fecha || new Date().toISOString(),
+        detalles: Array.isArray(proceso.detalles) ? proceso.detalles : []
+      })) : [],
+      fechas: operacionData.fechas || {
+        fecCreacion: new Date().toISOString(),
+        inicio: null,
+        final: null
+      },
+      estadoOperacion: operacionData.estadoOperacion || false,
+      currentStage: operacionData.currentStage || null
+    }
   } catch (error) {
     console.error('Error loading operacion details:', error)
     operacion.value = null
@@ -282,17 +309,17 @@ const getEfficiencyColor = (returnString = false) => {
 }
 
 const getCompletedProcesses = () => {
-  if (!operacion.value?.procesos) return 0
+  if (!operacion.value?.procesos || !Array.isArray(operacion.value.procesos)) return 0
   
   return operacion.value.procesos.filter(proceso => 
-    calculateProcesoProgress(proceso) === 100
+    proceso && calculateProcesoProgress(proceso) === 100
   ).length
 }
 
 const calculateProcesoProgress = (proceso) => {
-  if (!proceso.detalles || proceso.detalles.length === 0) return 0
+  if (!proceso || !proceso.detalles || !Array.isArray(proceso.detalles) || proceso.detalles.length === 0) return 0
   
-  const completed = proceso.detalles.filter(detalle => detalle.completed).length
+  const completed = proceso.detalles.filter(detalle => detalle && detalle.completed).length
   return Math.round((completed / proceso.detalles.length) * 100)
 }
 

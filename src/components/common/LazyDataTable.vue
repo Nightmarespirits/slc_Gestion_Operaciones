@@ -6,26 +6,12 @@
         <v-row align="center">
           <!-- Search Field -->
           <v-col v-if="showSearch" cols="12" md="6">
-            <v-text-field
-              v-model="searchTerm"
-              :placeholder="searchPlaceholder"
-              prepend-inner-icon="mdi-magnify"
-              variant="outlined"
-              density="compact"
-              clearable
-              hide-details
-              :loading="isSearching"
-              @click:clear="clearSearch"
-            >
+            <v-text-field v-model="searchTerm" :placeholder="searchPlaceholder" prepend-inner-icon="mdi-magnify"
+              variant="outlined" density="compact" clearable hide-details :loading="isSearching"
+              @click:clear="clearSearch">
               <template #append-inner>
                 <v-fade-transition>
-                  <v-progress-circular
-                    v-if="isSearching"
-                    size="20"
-                    width="2"
-                    indeterminate
-                    color="primary"
-                  />
+                  <v-progress-circular v-if="isSearching" size="20" width="2" indeterminate color="primary" />
                 </v-fade-transition>
               </template>
             </v-text-field>
@@ -47,12 +33,7 @@
     <!-- Data Table Container -->
     <v-card>
       <!-- Skeleton Loader for Initial Loading -->
-      <SkeletonLoader
-        v-if="isInitialLoading"
-        variant="table"
-        :rows="skeletonRows"
-        animation="wave"
-      />
+      <SkeletonLoader v-if="isInitialLoading" variant="table" :rows="skeletonRows" animation="wave" />
 
       <!-- Data Table -->
       <template v-else>
@@ -62,42 +43,19 @@
             <span>{{ title }}</span>
           </slot>
           <v-spacer />
-          <v-chip
-            v-if="showItemCount"
-            variant="outlined"
-            size="small"
-            color="primary"
-          >
+          <v-chip v-if="showItemCount" variant="outlined" size="small" color="primary">
             {{ totalItems }} {{ itemCountLabel }}
           </v-chip>
         </v-card-title>
 
         <!-- Virtualized Data Table -->
-        <v-data-table-virtual
-          :headers="computedHeaders"
-          :items="items"
-          :loading="isLoadingMore"
-          :height="tableHeight"
-          :item-value="itemValue"
-          :sort-by="sortBy"
-          :multi-sort="multiSort"
-          :must-sort="mustSort"
-          :items-per-page="-1"
-          :hide-default-footer="true"
-          class="lazy-data-table__table"
-          @update:sort-by="handleSortUpdate"
-        >
+        <v-data-table-virtual :headers="computedHeaders" :items="items" :loading="isLoadingMore" :height="tableHeight"
+          :item-value="itemValue" :sort-by="sortBy" :multi-sort="multiSort" :must-sort="mustSort" :items-per-page="-1"
+          :hide-default-footer="true" class="lazy-data-table__table" @update:sort-by="handleSortUpdate">
           <!-- Pass through all slots -->
-          <template
-            v-for="(_, slotName) in $slots"
-            #[slotName]="slotProps"
-            :key="slotName"
-          >
-            <slot
-              v-if="!['title', 'filters', 'actions', 'loading-more', 'no-data', 'error'].includes(slotName)"
-              :name="slotName"
-              v-bind="slotProps"
-            />
+          <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
+            <slot v-if="!['title', 'filters', 'actions', 'loading-more', 'no-data', 'error'].includes(slotName)"
+              :name="slotName" v-bind="slotProps" />
           </template>
 
           <!-- Custom No Data State -->
@@ -113,13 +71,7 @@
                 <div class="text-body-2 text-grey">
                   {{ noDataSubtext }}
                 </div>
-                <v-btn
-                  v-if="hasError"
-                  color="primary"
-                  variant="outlined"
-                  class="mt-4"
-                  @click="retry"
-                >
+                <v-btn v-if="hasError" color="primary" variant="outlined" class="mt-4" @click="retry">
                   <v-icon start>mdi-refresh</v-icon>
                   Reintentar
                 </v-btn>
@@ -129,25 +81,11 @@
         </v-data-table-virtual>
 
         <!-- Load More Indicator -->
-        <div
-          v-if="canLoadMore || isLoadingMore"
-          ref="loadMoreTrigger"
-          class="load-more-trigger"
-        >
-          <v-progress-linear
-            v-if="isLoadingMore"
-            indeterminate
-            color="primary"
-            height="3"
-          />
+        <div v-if="canLoadMore || isLoadingMore" ref="loadMoreTrigger" class="load-more-trigger">
+          <v-progress-linear v-if="isLoadingMore" indeterminate color="primary" height="3" />
           <div v-else-if="canLoadMore" class="text-center pa-4">
             <slot name="loading-more">
-              <v-btn
-                variant="outlined"
-                color="primary"
-                :loading="isLoadingMore"
-                @click="loadMore"
-              >
+              <v-btn variant="outlined" color="primary" :loading="isLoadingMore" @click="loadMore">
                 <v-icon start>mdi-chevron-down</v-icon>
                 Cargar más
               </v-btn>
@@ -156,22 +94,12 @@
         </div>
 
         <!-- Error State -->
-        <v-alert
-          v-if="hasError && !isInitialLoading"
-          type="error"
-          variant="tonal"
-          class="ma-4"
-        >
+        <v-alert v-if="hasError && !isInitialLoading" type="error" variant="tonal" class="ma-4">
           <template #title>Error al cargar datos</template>
           <slot name="error" :error="errorMessage" :retry="retry">
             {{ errorMessage }}
             <div class="mt-2">
-              <v-btn
-                size="small"
-                color="error"
-                variant="outlined"
-                @click="retry"
-              >
+              <v-btn size="small" color="error" variant="outlined" @click="retry">
                 <v-icon start>mdi-refresh</v-icon>
                 Reintentar
               </v-btn>
@@ -376,14 +304,13 @@ const {
 )
 
 // Infinite scroll
-const {
-  observe,
-  unobserve
-} = useInfiniteScroll({
+const infiniteScrollComposable = useInfiniteScroll({
   loadMoreFunction: loadMoreData,
   canLoadMore: () => canLoadMore.value,
   debounceDelay: 200
 })
+
+const { targetElement: infiniteScrollTarget } = infiniteScrollComposable
 
 // Computed properties
 const items = computed(() => lazyState.items)
@@ -458,7 +385,11 @@ watch(hasError, (newError) => {
 watch(loadMoreTrigger, async (newTrigger) => {
   if (newTrigger && props.enableInfiniteScroll) {
     await nextTick()
-    observe(newTrigger)
+    try {
+      infiniteScrollTarget.value = newTrigger
+    } catch (error) {
+      console.error('Error setting up infinite scroll observer:', error)
+    }
   }
 })
 
@@ -472,8 +403,12 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  if (loadMoreTrigger.value) {
-    unobserve(loadMoreTrigger.value)
+  try {
+    if (infiniteScrollComposable.disconnect) {
+      infiniteScrollComposable.disconnect()
+    }
+  } catch (error) {
+    console.error('Error cleaning up infinite scroll observer:', error)
   }
 })
 
