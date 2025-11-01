@@ -1,283 +1,328 @@
 <template>
   <div class="optimized-proceso-table">
-    <LazyDataTable
-      :fetch-function="fetchProcesos"
-      :headers="tableHeaders"
-      :title="`Registros de Proceso ${title}`"
-      :initial-limit="30"
-      :load-more-limit="30"
-      :search-placeholder="`Buscar por N° Orden o Responsable en ${title}`"
-      :enable-cache="true"
-      :cache-key="`procesos-${title.toLowerCase()}`"
-      :table-height="600"
-      :skeleton-rows="10"
-      :sort-by="[{ key: 'createdAt', order: 'desc' }]"
-      @item-click="handleItemClick"
-      @search-change="handleSearchChange"
-      @sort-change="handleSortChange"
-    >
-      <!-- Custom title with icon -->
-      <template #title>
-        <div class="d-flex align-center">
-          <v-icon class="mr-2">mdi-clipboard-outline</v-icon>
-          <span>Registros de Proceso {{ title }}</span>
-        </div>
-      </template>
+    <!-- Usar directamente el store sin LazyDataTable -->
+    <v-card>
+      <!-- Header con búsqueda y filtros -->
+      <v-card-title v-if="showHeader" class="d-flex align-center">
+        <slot name="title">
+          <div class="d-flex align-center">
+            <v-icon class="mr-2">mdi-clipboard-outline</v-icon>
+            <span>Registros de Proceso {{ title }}</span>
+          </div>
+        </slot>
+        <v-spacer />
+        <v-chip v-if="showItemCount" variant="outlined" size="small" color="primary">
+          {{ totalItems }} elementos
+        </v-chip>
+      </v-card-title>
 
-      <!-- Custom actions -->
-      <template #actions>
-        <v-btn
-          color="primary"
-          variant="outlined"
-          size="small"
-          @click="refreshData"
-          :loading="isRefreshing"
+      <!-- Search and Filters Section -->
+      <v-card v-if="showSearch || showFilters" flat class="mb-0">
+        <v-card-text>
+          <v-row align="center">
+            <!-- Search Field -->
+            <v-col v-if="showSearch" cols="12" md="6">
+              <v-text-field
+                v-model="searchTerm"
+                :placeholder="`Buscar por N° Orden o Responsable en ${title}`"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                density="compact"
+                clearable
+                hide-details
+                :loading="isSearching"
+                @click:clear="clearSearch"
+              >
+                <template #append-inner>
+                  <v-fade-transition>
+                    <v-progress-circular v-if="isSearching" size="20" width="2" indeterminate color="primary" />
+                  </v-fade-transition>
+                </template>
+              </v-text-field>
+            </v-col>
+
+            <!-- Custom Filters -->
+            <v-col v-if="showFilters" cols="12" md="6">
+              <v-row dense>
+                <v-col cols="12" sm="4">
+                  <v-select
+                    v-model="filters.responsable"
+                    :items="responsableOptions"
+                    label="Responsable"
+                    variant="outlined"
+                    density="compact"
+                    clearable
+                    hide-details
+                  >
+                    <template #prepend-inner>
+                      <v-icon size="small">mdi-account</v-icon>
+                    </template>
+                  </v-select>
+                </v-col>
+                
+                <v-col cols="12" sm="4">
+                  <v-select
+                    v-model="filters.estado"
+                    :items="estadoOptions"
+                    label="Estado"
+                    variant="outlined"
+                    density="compact"
+                    clearable
+                    hide-details
+                  >
+                    <template #prepend-inner>
+                      <v-icon size="small">mdi-check-circle</v-icon>
+                    </template>
+                  </v-select>
+                </v-col>
+                
+                <v-col cols="12" sm="4">
+                  <v-select
+                    v-model="filters.sede"
+                    :items="sedeOptions"
+                    label="Sede"
+                    variant="outlined"
+                    density="compact"
+                    clearable
+                    hide-details
+                  >
+                    <template #prepend-inner>
+                      <v-icon size="small">mdi-map-marker</v-icon>
+                    </template>
+                  </v-select>
+                </v-col>
+              </v-row>
+            </v-col>
+
+            <!-- Actions -->
+            <v-col cols="12" md="auto">
+              <slot name="actions">
+                <v-btn
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                  @click="refreshData"
+                  :loading="isRefreshing"
+                >
+                  <v-icon start>mdi-refresh</v-icon>
+                  Actualizar
+                </v-btn>
+              </slot>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+
+      <!-- Skeleton Loader for Initial Loading -->
+      <div v-if="isInitialLoading" class="pa-4">
+        <v-skeleton-loader
+          type="table-row@10"
+          class="mx-auto"
+        />
+      </div>
+
+      <!-- Data Table -->
+      <template v-else>
+        <!-- Virtualized Data Table -->
+        <v-data-table-virtual
+          :headers="computedHeaders"
+          :items="displayedItems"
+          :loading="isLoadingMore"
+          :height="tableHeight"
+          :item-value="itemValue"
+          :sort-by="sortBy"
+          :multi-sort="multiSort"
+          :must-sort="mustSort"
+          :items-per-page="-1"
+          :hide-default-footer="true"
+          class="optimized-table"
+          @update:sort-by="handleSortUpdate"
         >
-          <v-icon start>mdi-refresh</v-icon>
-          Actualizar
-        </v-btn>
-      </template>
+          <!-- Pass through all slots -->
+          <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
+            <slot v-if="!['title', 'filters', 'actions', 'loading-more', 'no-data', 'error'].includes(slotName)"
+              :name="slotName" v-bind="slotProps" />
+          </template>
 
-      <!-- Custom filters -->
-      <template #filters="{ filters, updateFilter }">
-        <v-row dense>
-          <v-col cols="12" sm="6" md="4">
-            <v-select
-              :model-value="filters.responsable"
-              :items="responsableOptions"
-              label="Responsable"
-              variant="outlined"
-              density="compact"
-              clearable
-              hide-details
-              @update:model-value="updateFilter('responsable', $event)"
-            >
-              <template #prepend-inner>
+          <!-- Detalles column with optimized rendering -->
+          <template #item.detalles="{ item }">
+            <div class="detalles-container">
+              <v-chip
+                v-for="(detalle, index) in getVisibleDetalles(item.detalles)"
+                :key="`${item.id}-${detalle.numOrden}-${index}`"
+                :color="evalColor(detalle?.colorMarcado || '')"
+                variant="elevated"
+                class="ma-1"
+                size="small"
+                label
+              >
+                <template #prepend>
+                  <v-icon class="pr-2" size="small">mdi-more</v-icon>
+                </template>
+                {{ detalle?.numOrden || '[Editar]' }}
+              </v-chip>
+              
+              <!-- Show more indicator -->
+              <v-chip
+                v-if="item.detalles && item.detalles.length > maxVisibleDetalles"
+                variant="outlined"
+                size="small"
+                class="ma-1"
+                @click="showAllDetalles(item)"
+              >
+                +{{ item.detalles.length - maxVisibleDetalles }} más
+              </v-chip>
+            </div>
+          </template>
+
+          <!-- Fecha y Hora column -->
+          <template #item.fechaYHora="{ item }">
+            <div class="fecha-container">
+              <div class="text-body-2">
+                {{ formatDateTime(item.createdAt) }}
+              </div>
+              <div class="text-caption text-grey">
+                {{ formatHora(item.createdAt) }}
+              </div>
+            </div>
+          </template>
+
+          <!-- Responsable column -->
+          <template #item.responsable="{ item }">
+            <div class="responsable-container">
+              <v-avatar size="24" class="mr-2">
                 <v-icon size="small">mdi-account</v-icon>
-              </template>
-            </v-select>
-          </v-col>
-          
-          <v-col cols="12" sm="6" md="4">
-            <v-select
-              :model-value="filters.estado"
-              :items="estadoOptions"
-              label="Estado"
-              variant="outlined"
-              density="compact"
-              clearable
-              hide-details
-              @update:model-value="updateFilter('estado', $event)"
-            >
-              <template #prepend-inner>
-                <v-icon size="small">mdi-check-circle</v-icon>
-              </template>
-            </v-select>
-          </v-col>
-          
-          <v-col cols="12" sm="6" md="4">
-            <v-select
-              :model-value="filters.sede"
-              :items="sedeOptions"
-              label="Sede"
-              variant="outlined"
-              density="compact"
-              clearable
-              hide-details
-              @update:model-value="updateFilter('sede', $event)"
-            >
-              <template #prepend-inner>
-                <v-icon size="small">mdi-map-marker</v-icon>
-              </template>
-            </v-select>
-          </v-col>
-        </v-row>
-      </template>
-
-      <!-- Detalles column with optimized rendering -->
-      <template #item.detalles="{ item }">
-        <div class="detalles-container">
-          <v-chip
-            v-for="(detalle, index) in getVisibleDetalles(item.detalles)"
-            :key="`${item.id}-${detalle.numOrden}-${index}`"
-            :color="evalColor(detalle?.colorMarcado || '')"
-            variant="elevated"
-            class="ma-1"
-            size="small"
-            label
-          >
-            <template #prepend>
-              <v-icon class="pr-2" size="small">mdi-more</v-icon>
-            </template>
-            {{ detalle?.numOrden || '[Editar]' }}
-          </v-chip>
-          
-          <!-- Show more indicator -->
-          <v-chip
-            v-if="item.detalles && item.detalles.length > maxVisibleDetalles"
-            variant="outlined"
-            size="small"
-            class="ma-1"
-            @click="showAllDetalles(item)"
-          >
-            +{{ item.detalles.length - maxVisibleDetalles }} más
-          </v-chip>
-        </div>
-      </template>
-
-      <!-- Fecha y Hora column -->
-      <template #item.fechaYHora="{ item }">
-        <div class="fecha-container">
-          <div class="text-body-2">
-            {{ formatDateTime(item.createdAt) }}
-          </div>
-          <div class="text-caption text-grey">
-            {{ formatHora(item.createdAt) }}
-          </div>
-        </div>
-      </template>
-
-      <!-- Responsable column -->
-      <template #item.responsable="{ item }">
-        <div class="responsable-container">
-          <v-avatar size="24" class="mr-2">
-            <v-icon size="small">mdi-account</v-icon>
-          </v-avatar>
-          <div>
-            <div class="text-body-2">
-              {{ getResponsableName(item.responsable) }}
+              </v-avatar>
+              <div>
+                <div class="text-body-2">
+                  {{ getResponsableName(item.responsable) }}
+                </div>
+                <div class="text-caption text-grey">
+                  {{ item.sede?.nombre || 'Sin sede' }}
+                </div>
+              </div>
             </div>
-            <div class="text-caption text-grey">
-              {{ item.sede?.nombre || 'Sin sede' }}
+          </template>
+
+          <!-- Estado column with progress indicator -->
+          <template #item.estado="{ item }">
+            <div class="estado-container">
+              <v-chip
+                :color="getProcessStatus(item) ? 'green' : 'red'"
+                :text="getProcessStatus(item) ? 'Finalizado' : 'Pendiente'"
+                class="text-uppercase mb-1"
+                size="small"
+                label
+              >
+                <template #prepend>
+                  <v-icon size="small" class="pr-2">
+                    {{ getProcessStatus(item) ? 'mdi-checkbox-marked-circle-outline' : 'mdi-clock-outline' }}
+                  </v-icon>
+                </template>
+              </v-chip>
+              
+              <!-- Progress indicator -->
+              <div v-if="item.detalles && item.detalles.length > 0" class="progress-container">
+                <v-progress-linear
+                  :model-value="getCompletionPercentage(item)"
+                  :color="getProgressColor(item)"
+                  height="4"
+                  rounded
+                  class="mb-1"
+                />
+                <div class="text-caption text-center">
+                  {{ getCompletedDetailsCount(item) }}/{{ item.detalles.length }}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </template>
+          </template>
 
-      <!-- Estado column with progress indicator -->
-      <template #item.estado="{ item }">
-        <div class="estado-container">
-          <v-chip
-            :color="getProcessStatus(item) ? 'green' : 'red'"
-            :text="getProcessStatus(item) ? 'Finalizado' : 'Pendiente'"
-            class="text-uppercase mb-1"
-            size="small"
-            label
-          >
-            <template #prepend>
-              <v-icon size="small" class="pr-2">
-                {{ getProcessStatus(item) ? 'mdi-checkbox-marked-circle-outline' : 'mdi-clock-outline' }}
-              </v-icon>
-            </template>
-          </v-chip>
-          
-          <!-- Progress indicator -->
-          <div v-if="item.detalles && item.detalles.length > 0" class="progress-container">
-            <v-progress-linear
-              :model-value="getCompletionPercentage(item)"
-              :color="getProgressColor(item)"
-              height="4"
-              rounded
-              class="mb-1"
-            />
-            <div class="text-caption text-center">
-              {{ getCompletedDetailsCount(item) }}/{{ item.detalles.length }}
+          <!-- Acciones column -->
+          <template #item.acciones="{ item }">
+            <div class="acciones-container">
+              <v-btn
+                icon="mdi-eye"
+                variant="plain"
+                color="primary"
+                size="small"
+                @click.stop="handleViewDetails(item)"
+                :loading="loadingDetails[item.id]"
+              >
+                <v-icon>mdi-eye</v-icon>
+                <v-tooltip activator="parent" location="top">
+                  Ver detalles
+                </v-tooltip>
+              </v-btn>
+
+              <v-btn
+                v-if="title !== 'Finalizado'"
+                icon="mdi-pencil"
+                variant="plain"
+                color="success"
+                size="small"
+                @click.stop="handleEdit(item)"
+              >
+                <v-icon>mdi-pencil</v-icon>
+                <v-tooltip activator="parent" location="top">
+                  Editar proceso
+                </v-tooltip>
+              </v-btn>
             </div>
-          </div>
-        </div>
+          </template>
+        </v-data-table-virtual>
       </template>
-
-      <!-- Acciones column -->
-      <template #item.acciones="{ item }">
-        <div class="acciones-container">
-          <v-btn
-            icon="mdi-eye"
-            variant="plain"
-            color="primary"
-            size="small"
-            @click.stop="handleViewDetails(item)"
-            :loading="loadingDetails[item.id]"
-          >
-            <v-icon>mdi-eye</v-icon>
-            <v-tooltip activator="parent" location="top">
-              Ver detalles
-            </v-tooltip>
-          </v-btn>
-
-          <v-btn
-            v-if="title !== 'Finalizado'"
-            icon="mdi-pencil"
-            variant="plain"
-            color="success"
-            size="small"
-            @click.stop="handleEdit(item)"
-          >
-            <v-icon>mdi-pencil</v-icon>
-            <v-tooltip activator="parent" location="top">
-              Editar proceso
-            </v-tooltip>
-          </v-btn>
-          
-          <!-- DESACTIVAMOS ELIMINACION DE PROCESO POR REQUERIMIENTO DE CLIENTE
-          <v-btn
-            v-if="title !== 'Finalizado'"
-            icon="mdi-delete"
-            variant="plain"
-            color="error"
-            size="small"
-            @click.stop="handleDelete(item)"
-          >
-            <v-icon>mdi-delete</v-icon>
-            <v-tooltip activator="parent" location="top">
-              Eliminar proceso
-            </v-tooltip>
-          </v-btn>
-            -->
-
-        </div>
-      </template>
-
-      <!-- Custom no data state -->
-      <template #no-data>
-        <div class="text-center pa-8">
-          <v-icon size="64" color="grey-lighten-1" class="mb-4">
-            mdi-clipboard-search-outline
-          </v-icon>
-          <div class="text-h6 text-grey-darken-1 mb-2">
-            No hay procesos de {{ title.toLowerCase() }}
-          </div>
-          <div class="text-body-2 text-grey">
-            Los procesos aparecerán aquí cuando sean creados
-          </div>
-        </div>
-      </template>
-
-      <!-- Custom error state -->
-      <template #error="{ error, retry }">
-        <div class="text-center pa-4">
-          <v-icon size="48" color="error" class="mb-2">mdi-alert-circle</v-icon>
-          <div class="text-body-1 mb-2">{{ error }}</div>
-          <v-btn color="error" variant="outlined" @click="retry">
-            <v-icon start>mdi-refresh</v-icon>
-            Reintentar
-          </v-btn>
-        </div>
-      </template>
-    </LazyDataTable>
+    </v-card>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useProcesosStore } from '../../store/procesos'
 import { evalColor } from '../../utils/evalColor'
 import { dateTimeZConverter, formatTimeAgo } from '../../utils/dateTimeZConverter'
-import LazyDataTable from '../common/LazyDataTable.vue'
+import { useSearchDebounce } from '../../composables/useDebounce'
 
 const props = defineProps({
   title: {
     type: String,
     required: true
+  },
+  // Props adicionales para compatibilidad
+  showSearch: {
+    type: Boolean,
+    default: true
+  },
+  showFilters: {
+    type: Boolean,
+    default: true
+  },
+  showHeader: {
+    type: Boolean,
+    default: true
+  },
+  showItemCount: {
+    type: Boolean,
+    default: true
+  },
+  tableHeight: {
+    type: [String, Number],
+    default: 600
+  },
+  itemValue: {
+    type: String,
+    default: 'id'
+  },
+  sortBy: {
+    type: Array,
+    default: () => [{ key: 'createdAt', order: 'desc' }]
+  },
+  multiSort: {
+    type: Boolean,
+    default: false
+  },
+  mustSort: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -287,17 +332,36 @@ const emit = defineEmits([
   'onDeleteItem'
 ])
 
-const dataTableRef = ref(null)
 // Store
 const procesosStore = useProcesosStore()
 
 // State
+const searchTerm = ref('')
+const filters = ref({
+  responsable: null,
+  estado: null,
+  sede: null
+})
 const isRefreshing = ref(false)
 const loadingDetails = ref({})
 const maxVisibleDetalles = ref(3)
+const currentPage = ref(1)
+const pageSize = ref(30)
+const hasError = ref(false)
+const errorMessage = ref('')
+
+// Search debounce
+const { isSearching } = useSearchDebounce(
+  searchTerm,
+  300,
+  {
+    onSearch: (term) => handleSearch(term),
+    onClear: () => handleSearch('')
+  }
+)
 
 // Computed
-const tableHeaders = computed(() => [
+const computedHeaders = computed(() => [
   { 
     align: 'start', 
     key: 'detalles', 
@@ -335,8 +399,38 @@ const tableHeaders = computed(() => [
   }
 ])
 
+const displayedItems = computed(() => {
+  // Aplicar filtros usando el store
+  procesosStore.applyFilters({
+    tipo: props.title.toLowerCase(),
+    search: searchTerm.value,
+    ...filters.value
+  })
+  
+  // Paginación local
+  const start = 0
+  const end = currentPage.value * pageSize.value
+  return procesosStore.filteredProcesos.slice(start, end)
+})
+
+const totalItems = computed(() => procesosStore.filteredProcesos.length)
+const isInitialLoading = computed(() => procesosStore.loading.initial)
+const isLoadingMore = computed(() => procesosStore.loading.loadMore)
+
+const canLoadMore = computed(() => {
+  const totalFiltered = procesosStore.filteredProcesos.length
+  const displayed = displayedItems.value.length
+  return displayed < totalFiltered
+})
+
+const remainingItems = computed(() => {
+  return totalItems.value - displayedItems.value.length
+})
+
+// Options para filtros
 const responsableOptions = computed(() => {
-  return procesosStore.uniqueResponsables.map(nombre => ({
+  const options = procesosStore.getFilterOptions(props.title.toLowerCase())
+  return options.responsables.map(nombre => ({
     title: nombre,
     value: nombre
   }))
@@ -348,43 +442,46 @@ const estadoOptions = computed(() => [
 ])
 
 const sedeOptions = computed(() => {
-  return procesosStore.uniqueSedes.map(nombre => ({
+  const options = procesosStore.getFilterOptions(props.title.toLowerCase())
+  return options.sedes.map(nombre => ({
     title: nombre,
     value: nombre
   }))
 })
 
 // Methods
-const fetchProcesos = async (params) => {
+const handleSearch = async (term) => {
+  await procesosStore.searchProcesos(term, props.title.toLowerCase())
+}
+
+const clearSearch = () => {
+  searchTerm.value = ''
+}
+
+const loadMore = () => {
+  currentPage.value += 1
+}
+
+const refreshData = async () => {
   try {
-    const { page, limit, search, sortBy, sortOrder, ...filters } = params
-    
-    // Use store method for optimized fetching
-    const result = await procesosStore.fetchProcesosByType(props.title.toLowerCase(), {
-      page,
-      limit
+    isRefreshing.value = true
+    procesosStore.invalidateTypeCache(props.title.toLowerCase())
+    await procesosStore.loadProcesosByType(props.title.toLowerCase(), { 
+      forceRefresh: true 
     })
-    
-    // Apply search and filters if provided
-    if (search || Object.keys(filters).length > 0) {
-      procesosStore.applyFilters({
-        tipo: props.title.toLowerCase(),
-        numOrden: search || '',
-        ...filters
-      })
-    }
-    
-    const filteredData = procesosStore.filteredProcesos
-    
-    return {
-      data: filteredData.slice((page - 1) * limit, page * limit),
-      total: filteredData.length,
-      hasMore: filteredData.length > page * limit
-    }
   } catch (error) {
-    console.error('Error fetching procesos:', error)
-    throw error
+    console.error('Error refreshing data:', error)
+    hasError.value = true
+    errorMessage.value = error.message || 'Error al cargar datos'
+  } finally {
+    isRefreshing.value = false
   }
+}
+
+const retry = () => {
+  hasError.value = false
+  errorMessage.value = ''
+  refreshData()
 }
 
 const getVisibleDetalles = (detalles) => {
@@ -393,7 +490,6 @@ const getVisibleDetalles = (detalles) => {
 }
 
 const showAllDetalles = (item) => {
-  // Emit event to show details modal
   handleViewDetails(item)
 }
 
@@ -463,31 +559,31 @@ const handleDelete = (item) => {
   emit('onDeleteItem', item)
 }
 
-const handleSearchChange = (searchTerm) => {
-  // Search is handled by the LazyDataTable component
-  // This is just for additional processing if needed
+const handleSortUpdate = async (sortItems) => {
+  // Implementar ordenamiento si es necesario
+  console.log('Sort update:', sortItems)
 }
 
-const handleSortChange = (sortInfo) => {
-  // Sort is handled by the LazyDataTable component
-  // This is just for additional processing if needed
-}
-
-const refreshData = async () => {
-  try {
-    isRefreshing.value = true
-    procesosStore.invalidateTypeCache(props.title.toLowerCase())
-    // The LazyDataTable will automatically refresh when cache is invalidated
-  } catch (error) {
-    console.error('Error refreshing data:', error)
-  } finally {
-      isRefreshing.value = false
-  }
-}
+// Watchers para filtros
+watch(filters, () => {
+  currentPage.value = 1 // Reset pagination when filters change
+}, { deep: true })
 
 // Lifecycle
-onMounted(() => {
-  // Initial load is handled by LazyDataTable
+onMounted(async () => {
+  try {
+    // Establecer el tipo en los filtros activos
+    procesosStore.applyFilters({ tipo: props.title.toLowerCase() })
+    
+    // Cargar datos si no están en cache
+    if (!procesosStore.isCacheValid(props.title.toLowerCase())) {
+      await procesosStore.loadProcesosByType(props.title.toLowerCase())
+    }
+  } catch (error) {
+    console.error('Error loading initial data:', error)
+    hasError.value = true
+    errorMessage.value = error.message || 'Error al cargar datos iniciales'
+  }
 })
 </script>
 

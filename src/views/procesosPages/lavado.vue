@@ -35,9 +35,12 @@
         <!--Fin del Confirm Dialog COMPONENT-->
 
         <!--Tabla Procesos Optimizada-->
-        <OptimizedProcesoTable @onFullscreenItem="showDetails" @onEditItem="handleItemSelected"
-            @onDeleteItem="openConfirmDialog" :title="title">
-        </OptimizedProcesoTable>
+        <OptimizedProcesoTable 
+            @onFullscreenItem="showDetails" 
+            @onEditItem="handleItemSelected"
+            @onDeleteItem="openConfirmDialog" 
+            :title="title"
+        />
         <!--Fin de la tabla procesos -->
 
     </v-container>
@@ -125,9 +128,9 @@ const evalColor = color => {
 }
 const refreshData = () => {
     console.log("Refrescando la data de la tabla..........")
+    // Data loading is now handled by OptimizedProcesoTable component
+    // No need for manual cargarRegistros function
 }
-// Data loading is now handled by OptimizedProcesoTable component
-// No need for manual cargarRegistros function
 
 onMounted(() => {
     // Component initialization if needed
