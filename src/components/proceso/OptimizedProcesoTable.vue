@@ -217,7 +217,8 @@
               Editar proceso
             </v-tooltip>
           </v-btn>
-
+          
+          <!-- DESACTIVAMOS ELIMINACION DE PROCESO POR REQUERIMIENTO DE CLIENTE
           <v-btn
             v-if="title !== 'Finalizado'"
             icon="mdi-delete"
@@ -231,6 +232,8 @@
               Eliminar proceso
             </v-tooltip>
           </v-btn>
+            -->
+
         </div>
       </template>
 

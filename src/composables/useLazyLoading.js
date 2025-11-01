@@ -4,11 +4,15 @@ import { ref, reactive, computed, watch, readonly } from 'vue'
  * Composable para implementar lazy loading con paginación y carga incremental
  * Cumple con requisitos 1.1, 1.2, 1.4, 3.1, 3.3
  */
+
+// Cache Global simple en memoria
+const globalCache = new Map()
+
 export function useLazyLoading(options = {}) {
   const {
     initialLimit = 50,
     loadMoreLimit = 50,
-    fetchFunction = null,
+    fetchFunction = null, //Hace la llamada a la api para obtener datos
     cacheKey = null,
     enableCache = true
   } = options
@@ -36,8 +40,8 @@ export function useLazyLoading(options = {}) {
     lastFetch: null
   })
 
-  // Cache simple en memoria
-  const cache = new Map()
+  //Instanciando cache global
+  const cache = globalCache
 
   // Computed properties
   const hasItems = computed(() => state.items.length > 0)
