@@ -8,7 +8,7 @@
         </v-alert>
 
         <!--formulario-->
-        <FormComponent @showAlert="activeAlert" :tipoProceso="title" :selectedItem="selectedItem"></FormComponent>
+        <FormComponent @showAlert="activeAlert" :tipoProceso="title" :selectedItem="selectedItem" @onRegAdded="refreshData"></FormComponent>
 
         <!--Optimized Details Modal-->
         <OptimizedProcesoDetailsModal v-model="dialog" :proceso-id="procesoID" :proceso-data="procesoData"
@@ -123,7 +123,9 @@ const evalColor = color => {
             break;
     }
 }
-
+const refreshData = () => {
+    console.log("Refrescando la data de la tabla..........")
+}
 // Data loading is now handled by OptimizedProcesoTable component
 // No need for manual cargarRegistros function
 

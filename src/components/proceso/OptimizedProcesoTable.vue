@@ -11,7 +11,7 @@
       :cache-key="`procesos-${title.toLowerCase()}`"
       :table-height="600"
       :skeleton-rows="10"
-      :sort-by="[{ key: 'fechaYHora', order: 'desc' }]"
+      :sort-by="[{ key: 'createdAt', order: 'desc' }]"
       @item-click="handleItemClick"
       @search-change="handleSearchChange"
       @sort-change="handleSortChange"
@@ -129,10 +129,10 @@
       <template #item.fechaYHora="{ item }">
         <div class="fecha-container">
           <div class="text-body-2">
-            {{ formatDateTime(item.fecha) }}
+            {{ formatDateTime(item.createdAt) }}
           </div>
           <div class="text-caption text-grey">
-            {{ formatTimeAgo(item.fecha) }}
+            {{ formatHora(item.createdAt) }}
           </div>
         </div>
       </template>
@@ -271,7 +271,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useProcesosStore } from '../../store/procesos'
 import { evalColor } from '../../utils/evalColor'
-import { dateTimeZConverter } from '../../utils/dateTimeZConverter'
+import { dateTimeZConverter, formatTimeAgo } from '../../utils/dateTimeZConverter'
 import LazyDataTable from '../common/LazyDataTable.vue'
 
 const props = defineProps({
@@ -287,6 +287,7 @@ const emit = defineEmits([
   'onDeleteItem'
 ])
 
+const dataTableRef = ref(null)
 // Store
 const procesosStore = useProcesosStore()
 
@@ -397,23 +398,11 @@ const showAllDetalles = (item) => {
 }
 
 const formatDateTime = (fecha) => {
-  return dateTimeZConverter(fecha) || fecha
+  return dateTimeZConverter(fecha)
 }
 
-const formatTimeAgo = (fecha) => {
-  const now = new Date()
-  const date = new Date(fecha)
-  const diffMs = now - date
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  const diffDays = Math.floor(diffHours / 24)
-  
-  if (diffDays > 0) {
-    return `hace ${diffDays} día${diffDays > 1 ? 's' : ''}`
-  } else if (diffHours > 0) {
-    return `hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`
-  } else {
-    return 'hace poco'
-  }
+const formatHora = (fecha) => {
+  return formatTimeAgo(fecha)
 }
 
 const getResponsableName = (responsable) => {
@@ -492,7 +481,7 @@ const refreshData = async () => {
   } catch (error) {
     console.error('Error refreshing data:', error)
   } finally {
-    isRefreshing.value = false
+      isRefreshing.value = false
   }
 }
 

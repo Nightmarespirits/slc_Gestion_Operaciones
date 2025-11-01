@@ -1,41 +1,89 @@
- //Zona Horaria
-const zn = "America/Lima"
+const zn = "America/Lima";
 
-export const dateTimeZConverter = function (dateInput) {
-    // Expresión regular para validar formato ISO 8601
-    const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+export const dateTimeZConverter = function (fecha, hora = null) {
+  if (!fecha) return null;
 
-    // Intentar crear un objeto Date con el argumento proporcionado
-    const date = new Date(dateInput);
+  // Si se incluye hora, la combinamos; si no, solo usamos la fecha
+  const dateString = hora ? `${fecha} ${hora}` : fecha;
 
-    // Validar si:
-    // 1. La fecha es válida (no es NaN)
-    // 2. El argumento cumple con el formato ISO 8601
-    if (isNaN(date.getTime()) || !isoDateRegex.test(dateInput)) {
-        return null
-    }
+  // Crear el objeto Date
+  const date = new Date(dateString);
 
-    // Opciones para formatear la fecha
-    const dateOptions = {
-        weekday: "long", // Día de la semana completo (sábado, domingo...)
-        day: "numeric", // Día del mes
-        month: "long", // Mes completo (enero, febrero...)
-        year: "numeric", // Año completo
-        timeZone: zn, // Zona horaria especificada
-    };
+  // Validar si la fecha es válida
+  if (isNaN(date.getTime())) {
+    console.warn("Fecha inválida:", dateString);
+    return null;
+  }
 
-    // Opciones para formatear la hora
-    const timeOptions = {
-        hour: "2-digit", // Hora con 2 dígitos
-        minute: "2-digit", // Minutos con 2 dígitos
-        second: "2-digit", // Segundos con 2 dígitos
-        hour12: false, // Formato 24 horas
-        timeZone: zn, // Zona horaria especificada
-    };
+  // Opciones de formato
+  const dateOptions = {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: zn,
+  };
 
-    // Formatear fecha y hora usando Intl.DateTimeFormat
-    const formattedDate = new Intl.DateTimeFormat("es-ES", dateOptions).format(date);
-    const formattedTime = new Intl.DateTimeFormat("es-ES", timeOptions).format(date);
+  const timeOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    timeZone: zn,
+  };
 
-    return `${formattedDate} ${formattedTime}`
+  // Formatear la fecha
+  const formattedDate = new Intl.DateTimeFormat("es-PE", dateOptions).format(date);
+
+  // Si hay hora, la añadimos también
+  if (hora) {
+    const formattedTime = new Intl.DateTimeFormat("es-PE", timeOptions).format(date);
+    return `${formattedDate} ${formattedTime}`;
+  }
+
+  return formattedDate;
 };
+
+
+export const formatTimeAgo = (fechaCompleta) => {
+  if (!fechaCompleta) return "";
+
+  const now = new Date();
+  const date = new Date(fechaCompleta);
+
+  if (isNaN(date.getTime())) {
+    console.warn("Fecha inválida:", fechaCompleta);
+    return "";
+  }
+
+  const diffMs = now - date;
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMinutes / 60);
+
+  // Caso 1: hace segundos
+  if (diffMinutes < 1) {
+    return "Hace unos segundos";
+  }
+
+  // Caso 2: hace minutos
+  if (diffMinutes < 60) {
+    return `hace ${diffMinutes} minuto${diffMinutes > 1 ? "s" : ""}`;
+  }
+
+  // Caso 3: hace una hora
+  if (diffHours === 1) {
+    return "hace 1 hora";
+  }
+
+  // Caso 4: más de una hora → mostrar hora exacta en Lima
+  const options = {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    timeZone: zn,
+  };
+  const horaLima = new Intl.DateTimeFormat("es-PE", options).format(date);
+  return horaLima;
+};
+
