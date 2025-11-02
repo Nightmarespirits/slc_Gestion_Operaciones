@@ -393,6 +393,8 @@ watch(() => details.value,
 // Observa cambios en `sede.value.value` y ejecuta `cargarMaquinas` cuando cambia
 watch(() => sede.value.value, async (newValue) => {
     if (newValue !== null) {
+        console.log('watching sede value')
+        console.log(newValue)
     await cargarMaquinas(newValue);
     }
 },
@@ -580,6 +582,7 @@ const cargarResponsables = async () => {
 };
 
 const cargarMaquinas = async (sedeID) => {
+    console.log('cambiando maquina', sedeID)
     try {
         let tipoMaquina = ''
         switch (title) {
@@ -616,7 +619,7 @@ onMounted(()=>{
 //Otras funciones
 const cleanForm = () => {
     editionMode.value = false
-    sede.value.value = '';
+    //sede.value.value = ''; //La sede se queda estatica, Siempre tendra un valor (para hacer el proceso mas rapido)
     responsable.value.value = '';
     estado.value = false;
     details.value = [] ;

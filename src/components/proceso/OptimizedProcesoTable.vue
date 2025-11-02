@@ -633,6 +633,11 @@ watch(filters, async () => {
   }
 }, { deep: true })
 
+// Expose methods to parent component
+defineExpose({
+  refreshData
+})
+
 // Lifecycle
 onMounted(async () => {
   try {

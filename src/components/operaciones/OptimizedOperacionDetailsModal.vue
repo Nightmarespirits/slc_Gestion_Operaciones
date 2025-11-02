@@ -2,6 +2,7 @@
   <v-dialog 
     v-model="dialog" 
     max-width="1200px" 
+    fullscreen
     scrollable
     persistent
     transition="dialog-transition"
@@ -55,7 +56,7 @@
             <v-col cols="12">
               <h3 class="text-h6 mb-4">
                 <v-icon class="mr-2">mdi-information</v-icon>
-                Información General
+                Información General 
               </h3>
               <v-card variant="outlined">
                 <v-card-text>

@@ -8,7 +8,7 @@
         </v-alert>
 
         <!--formulario-->
-        <FormComponent @showAlert="activeAlert" :tipoProceso="title" :selectedItem="selectedItem" @onRegAdded="refreshData"></FormComponent>
+        <FormComponent @showAlert="activeAlert" :tipoProceso="title" :selectedItem="selectedItem" @onRegAdded="recargarTabla"></FormComponent>
 
         <!--Optimized Details Modal-->
         <OptimizedProcesoDetailsModal v-model="dialog" :proceso-id="procesoID" :proceso-data="procesoData"
@@ -36,6 +36,7 @@
 
         <!--Tabla Procesos Optimizada-->
         <OptimizedProcesoTable 
+            ref="procesoTable"
             @onFullscreenItem="showDetails" 
             @onEditItem="handleItemSelected"
             @onDeleteItem="openConfirmDialog" 
@@ -126,10 +127,13 @@ const evalColor = color => {
             break;
     }
 }
-const refreshData = () => {
+const procesoTable = ref(null)
+
+const recargarTabla = () => {
     console.log("Refrescando la data de la tabla..........")
-    // Data loading is now handled by OptimizedProcesoTable component
-    // No need for manual cargarRegistros function
+    if (procesoTable.value) {
+        procesoTable.value.refreshData()
+    }
 }
 
 onMounted(() => {
