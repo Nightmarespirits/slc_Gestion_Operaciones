@@ -32,7 +32,7 @@ export const useProcesosStore = defineStore('procesos', {
 
         // Configuración unificada
         config: {
-            pageSize: 30,
+            pageSize: 50, // Aumentar para mejor rendimiento
             cacheTTL: 5 * 60 * 1000, // 5 minutos
             detailsTTL: 10 * 60 * 1000, // 10 minutos
             preloadThreshold: 5
@@ -210,58 +210,104 @@ export const useProcesosStore = defineStore('procesos', {
             }
 
             return stats
+        },
+
+        // Información de paginación por tipo
+        getPaginationInfo: (state) => (tipo) => {
+            const entry = state.cache.get(tipo)
+            if (!entry || !entry.pagination) {
+                return {
+                    currentPage: 1,
+                    totalPages: 1,
+                    total: 0,
+                    hasNextPage: false,
+                    hasPrevPage: false,
+                    loaded: 0
+                }
+            }
+
+            return {
+                ...entry.pagination,
+                loaded: entry.items.length
+            }
+        },
+
+        // Verificar si se pueden cargar más datos
+        canLoadMore: (state) => (tipo) => {
+            const entry = state.cache.get(tipo)
+            return entry?.pagination?.hasNextPage || false
         }
     },
 
     actions: {
-        // Cargar procesos por tipo - Método principal simplificado
+        // Cargar procesos por tipo - Con paginación completa
         async loadProcesosByType(tipo, options = {}) {
             const {
                 page = 1,
                 limit = this.config.pageSize,
-                forceRefresh = false
+                forceRefresh = false,
+                append = false, // Para cargar más datos
+                search = '' // Para búsquedas
             } = options
 
-            // Verificar cache
-            if (!forceRefresh && this.isCacheValid(tipo)) {
+            // Verificar cache solo si no es append y no es force refresh
+            if (!forceRefresh && !append && !search && this.isCacheValid(tipo)) {
                 return this.getByType(tipo)
             }
 
-            this.loading.initial = true
+            // Determinar qué tipo de loading mostrar
+            if (append) {
+                this.loading.loadMore = true
+            } else {
+                this.loading.initial = true
+            }
 
             try {
-                // Intentar endpoint paginado primero
-                let response
-                try {
-                    response = await axios.get(
-                        `${import.meta.env.VITE_API_URL}/procesos/tipo/${tipo}/paginated`,
-                        { params: { page, limit } }
-                    )
-                } catch (error) {
-                    // Fallback a endpoint existente
-                    if (error.response?.status === 404) {
-                        response = await axios.get(
-                            `${import.meta.env.VITE_API_URL}/procesos/tipo/${tipo}`
-                        )
-                        response.data = { data: response.data, pagination: { hasMore: false } }
-                    } else {
-                        throw error
-                    }
+                // Preparar parámetros para la API
+                const params = { page, limit }
+                if (search) {
+                    params.search = search
                 }
 
-                const data = response.data.data || response.data
+                // Usar endpoint paginado
+                const response = await axios.get(
+                    `${import.meta.env.VITE_API_URL}/procesos/tipo/${tipo}/paginated`,
+                    { params }
+                )
+
+                const { data, meta } = response.data
                 const formattedData = this.formatProcesosData(data)
 
-                // Actualizar cache
-                this.cache.set(tipo, {
-                    items: formattedData,
-                    timestamp: Date.now(),
-                    pagination: {
-                        total: formattedData.length,
-                        loaded: formattedData.length,
-                        hasMore: false
+                // Obtener entrada de cache existente
+                let cacheEntry = this.cache.get(tipo)
+
+                if (!cacheEntry || !append || search) {
+                    // Crear nueva entrada o reemplazar (también para búsquedas)
+                    cacheEntry = {
+                        items: formattedData,
+                        timestamp: Date.now(),
+                        pagination: {
+                            currentPage: page,
+                            totalPages: meta.totalPages,
+                            total: meta.total,
+                            hasNextPage: meta.hasNextPage,
+                            hasPrevPage: meta.hasPrevPage,
+                            nextPage: meta.nextPage,
+                            prevPage: meta.prevPage,
+                            limit: limit
+                        },
+                        searchTerm: search || '' // Guardar término de búsqueda
                     }
-                })
+                } else {
+                    // Append a datos existentes
+                    cacheEntry.items.push(...formattedData)
+                    cacheEntry.pagination.currentPage = page
+                    cacheEntry.pagination.hasNextPage = meta.hasNextPage
+                    cacheEntry.pagination.nextPage = meta.nextPage
+                    cacheEntry.timestamp = Date.now()
+                }
+
+                this.cache.set(tipo, cacheEntry)
 
                 return this.getByType(tipo)
 
@@ -270,7 +316,25 @@ export const useProcesosStore = defineStore('procesos', {
                 throw error
             } finally {
                 this.loading.initial = false
+                this.loading.loadMore = false
             }
+        },
+
+        // Cargar más datos (paginación)
+        async loadMoreProcesosByType(tipo) {
+            const entry = this.cache.get(tipo)
+            if (!entry || !entry.pagination.hasNextPage) {
+                return false // No hay más datos
+            }
+
+            await this.loadProcesosByType(tipo, {
+                page: entry.pagination.nextPage,
+                limit: entry.pagination.limit,
+                append: true,
+                search: entry.searchTerm || ''
+            })
+
+            return true
         },
 
         // Método de compatibilidad con el código existente
@@ -313,14 +377,28 @@ export const useProcesosStore = defineStore('procesos', {
             }
         },
 
-        // Buscar procesos - Simplificado
+        // Buscar procesos - Con API
         async searchProcesos(searchTerm, tipo = null) {
             this.activeFilters.search = searchTerm
             if (tipo) this.activeFilters.tipo = tipo
 
-            // Si no hay datos en cache, cargarlos
-            if (!this.isCacheValid(tipo)) {
-                await this.loadProcesosByType(tipo)
+            // Si hay término de búsqueda, usar la API
+            if (searchTerm && searchTerm.trim()) {
+                this.loading.search = true
+                try {
+                    await this.loadProcesosByType(tipo, {
+                        page: 1,
+                        search: searchTerm.trim(),
+                        forceRefresh: true
+                    })
+                } finally {
+                    this.loading.search = false
+                }
+            } else {
+                // Si no hay búsqueda, cargar datos normales
+                if (!this.isCacheValid(tipo)) {
+                    await this.loadProcesosByType(tipo, { forceRefresh: true })
+                }
             }
 
             return this.filteredProcesos

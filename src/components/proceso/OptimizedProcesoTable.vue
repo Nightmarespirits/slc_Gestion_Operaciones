@@ -269,7 +269,59 @@
               </v-btn>
             </div>
           </template>
+          <!-- Custom No Data State -->
+          <template #no-data>
+            <div class="text-center pa-8">
+              <v-icon size="64" color="grey-lighten-1" class="mb-4">
+                mdi-clipboard-search-outline
+              </v-icon>
+              <div class="text-h6 text-grey-darken-1 mb-2">
+                No hay procesos de {{ title.toLowerCase() }}
+              </div>
+              <div class="text-body-2 text-grey">
+                Los procesos aparecerán aquí cuando sean creados
+              </div>
+            </div>
+          </template>
         </v-data-table-virtual>
+
+        <!-- Load More Button -->
+        <div v-if="canLoadMore || isLoadingMore" class="text-center pa-4 border-t">
+          <div v-if="isLoadingMore" class="mb-2">
+            <v-progress-linear indeterminate color="primary" height="3" />
+            <div class="text-caption text-grey mt-2">Cargando más registros...</div>
+          </div>
+          
+          <v-btn
+            v-else-if="canLoadMore"
+            variant="outlined"
+            color="primary"
+            size="large"
+            :loading="isLoadingMore"
+            @click="loadMore"
+            class="mb-2"
+          >
+            <v-icon start>mdi-chevron-down</v-icon>
+            Cargar más registros
+          </v-btn>
+          
+          <div v-if="canLoadMore" class="text-caption text-grey">
+            Mostrando {{ displayedItems.length }} de {{ totalItems }} registros
+            <span v-if="remainingItems > 0">({{ remainingItems }} restantes)</span>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <v-alert v-if="hasError && !isInitialLoading" type="error" variant="tonal" class="ma-4">
+          <template #title>Error al cargar datos</template>
+          {{ errorMessage }}
+          <div class="mt-2">
+            <v-btn size="small" color="error" variant="outlined" @click="retry">
+              <v-icon start>mdi-refresh</v-icon>
+              Reintentar
+            </v-btn>
+          </div>
+        </v-alert>
       </template>
     </v-card>
   </div>
@@ -345,8 +397,6 @@ const filters = ref({
 const isRefreshing = ref(false)
 const loadingDetails = ref({})
 const maxVisibleDetalles = ref(3)
-const currentPage = ref(1)
-const pageSize = ref(30)
 const hasError = ref(false)
 const errorMessage = ref('')
 
@@ -407,24 +457,25 @@ const displayedItems = computed(() => {
     ...filters.value
   })
   
-  // Paginación local
-  const start = 0
-  const end = currentPage.value * pageSize.value
-  return procesosStore.filteredProcesos.slice(start, end)
+  // Mostrar todos los datos cargados (la paginación se maneja en el store)
+  return procesosStore.filteredProcesos
 })
 
-const totalItems = computed(() => procesosStore.filteredProcesos.length)
+const totalItems = computed(() => {
+  const paginationInfo = procesosStore.getPaginationInfo(props.title.toLowerCase())
+  return paginationInfo.total
+})
+
 const isInitialLoading = computed(() => procesosStore.loading.initial)
 const isLoadingMore = computed(() => procesosStore.loading.loadMore)
 
 const canLoadMore = computed(() => {
-  const totalFiltered = procesosStore.filteredProcesos.length
-  const displayed = displayedItems.value.length
-  return displayed < totalFiltered
+  return procesosStore.canLoadMore(props.title.toLowerCase())
 })
 
 const remainingItems = computed(() => {
-  return totalItems.value - displayedItems.value.length
+  const paginationInfo = procesosStore.getPaginationInfo(props.title.toLowerCase())
+  return paginationInfo.total - paginationInfo.loaded
 })
 
 // Options para filtros
@@ -458,8 +509,14 @@ const clearSearch = () => {
   searchTerm.value = ''
 }
 
-const loadMore = () => {
-  currentPage.value += 1
+const loadMore = async () => {
+  try {
+    await procesosStore.loadMoreProcesosByType(props.title.toLowerCase())
+  } catch (error) {
+    console.error('Error loading more data:', error)
+    hasError.value = true
+    errorMessage.value = error.message || 'Error al cargar más datos'
+  }
 }
 
 const refreshData = async () => {
@@ -565,8 +622,15 @@ const handleSortUpdate = async (sortItems) => {
 }
 
 // Watchers para filtros
-watch(filters, () => {
-  currentPage.value = 1 // Reset pagination when filters change
+watch(filters, async () => {
+  // Recargar datos cuando cambian los filtros
+  try {
+    await procesosStore.loadProcesosByType(props.title.toLowerCase(), { 
+      forceRefresh: true 
+    })
+  } catch (error) {
+    console.error('Error reloading data after filter change:', error)
+  }
 }, { deep: true })
 
 // Lifecycle
