@@ -15,12 +15,12 @@
         elevation="5"
         max-width="380"
         rounded="lg"
-        :disabled="false"  
+        :disabled="!apiStore.stateAPI"  
 
       >
         <!-- Progress bar que se muestra solo durante la carga -->
         <v-progress-linear
-          v-if="false"
+          v-if="!apiStore.stateAPI"
           indeterminate
           color="blue"
           class="mb-0"
@@ -129,7 +129,7 @@ const msg = computed(() => {
 
 // Manejador del inicio de sesión
 const handleLogin = async () => {
-  const loggedIn = await authStore.login(account.value, password.value);
+  const loggedIn = await authStore.login(account.value.trim(), password.value);
   
   if (loggedIn) {
     router.push('/app');
