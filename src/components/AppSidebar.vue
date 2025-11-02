@@ -39,24 +39,8 @@
 
       <v-list-item 
         prepend-icon="mdi-table-edit" 
-        title="Todas las Operaciones" 
+        title="Operaciones" 
         :to="{ path: '/app/operaciones' }"
-        active-class="v-list-item--active"
-        exact
-      ></v-list-item>
-
-      <v-list-item 
-        prepend-icon="mdi-checkbox-marked-circle-outline" 
-        title="Operaciones Finalizadas" 
-        :to="{ path: '/app/operaciones/finalizadas' }"
-        active-class="v-list-item--active"
-        exact
-      ></v-list-item>
-
-      <v-list-item 
-        prepend-icon="mdi-clock-time-four-outline" 
-        title="Operaciones Pendientes" 
-        :to="{ path: '/app/operaciones/pendientes' }"
         active-class="v-list-item--active"
         exact
       ></v-list-item>

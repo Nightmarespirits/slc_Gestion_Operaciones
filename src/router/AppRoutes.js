@@ -12,7 +12,7 @@ const AppRoutes = {
             name: 'Home',
             component: () => import('../views/home.vue'),
         },
-        //OperacionesRoutes,
+        OperacionesRoutes,
         ProcesosRoutes,
         ConfigRoutes
     ]

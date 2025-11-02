@@ -123,13 +123,13 @@ export const useOperacionesStore = defineStore('operaciones', {
             } = options;
 
             // Verificar si necesitamos cargar datos
-            if (!forceRefresh && this.isCacheValid && this.items.size > 0) {
+            if (!forceRefresh && this.isCacheValid && this.items.size > 0 && page === 1) {
                 return this.paginatedItems;
             }
 
             // Determinar tipo de loading
             const isInitialLoad = this.items.size === 0;
-            const isSearch = Object.keys(filters).length > 0;
+            const isSearch = filters.search && filters.search.trim();
 
             if (isInitialLoad) {
                 this.loading.initial = true;
@@ -140,16 +140,35 @@ export const useOperacionesStore = defineStore('operaciones', {
             }
 
             try {
-                // Construir URL con parámetros
-                const params = new URLSearchParams({
+                // Construir parámetros de consulta
+                const queryParams = new URLSearchParams({
                     page: page.toString(),
-                    limit: limit.toString(),
-                    ...filters
+                    limit: limit.toString()
                 });
 
-                const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/operacion/paginated?${params}`
-                );
+                // Agregar búsqueda si existe
+                if (filters.search && filters.search.trim()) {
+                    queryParams.append('search', filters.search.trim());
+                }
+
+                // Agregar filtros
+                Object.entries(filters).forEach(([key, value]) => {
+                    if (value !== null && value !== undefined && value !== '' && key !== 'search') {
+                        if (key === 'dateRange' && Array.isArray(value) && value.length === 2) {
+                            queryParams.append('dateFrom', value[0]);
+                            queryParams.append('dateTo', value[1]);
+                        } else if (key === 'estado' && typeof value === 'boolean') {
+                            queryParams.append('estado', value.toString());
+                        } else {
+                            queryParams.append(key, value.toString());
+                        }
+                    }
+                });
+
+                const url = `${import.meta.env.VITE_API_URL}/operacion/paginated?${queryParams.toString()}`;
+                console.log('Fetching operaciones from:', url);
+
+                const response = await axios.get(url);
 
                 // Validar estructura de respuesta
                 if (!response || !response.data) {
@@ -157,41 +176,24 @@ export const useOperacionesStore = defineStore('operaciones', {
                     throw new Error('Respuesta de API inválida');
                 }
 
-                // Manejar diferentes estructuras de respuesta
-                let data, paginationInfo;
+                const { data: operaciones, meta } = response.data;
 
-                if (response.data.data && response.data.meta) {
-                    // Estructura con meta (paginada)
-                    data = response.data.data;
-                    paginationInfo = response.data.meta;
-                } else if (Array.isArray(response.data)) {
-                    // Estructura simple (array directo)
-                    data = response.data;
-                    paginationInfo = {
-                        total: response.data.length,
-                        hasNextPage: false,
-                        currentPage: page
-                    };
-                } else {
-                    // Fallback para otras estructuras
-                    data = response.data.operaciones || response.data.items || [];
-                    paginationInfo = {
-                        total: response.data.total || data.length,
-                        hasNextPage: response.data.hasNextPage || false,
-                        currentPage: page
-                    };
+                // Validar que operaciones sea un array
+                if (!Array.isArray(operaciones)) {
+                    console.error('API response data is not an array:', operaciones);
+                    throw new Error('Formato de datos inválido');
                 }
 
                 // Procesar y cachear datos
-                const formattedData = this.formatOperacionesData(data);
+                const formattedData = this.formatOperacionesData(operaciones);
                 this.cacheOperaciones(formattedData, page === 1);
 
                 // Actualizar paginación con valores seguros
                 this.pagination = {
                     ...this.pagination,
                     page,
-                    total: paginationInfo?.total || 0,
-                    hasMore: paginationInfo?.hasNextPage || false,
+                    total: meta?.total || 0,
+                    hasMore: meta?.hasNextPage || false,
                     lastFetch: Date.now()
                 };
 
@@ -398,24 +400,33 @@ export const useOperacionesStore = defineStore('operaciones', {
             const tickets = this.getAllTickets(operacion);
 
             return {
+                _id: operacion._id,
                 id: operacion._id,
                 ordenes: tickets,
                 procesos: operacion.procesos?.map(proceso => ({
+                    _id: proceso._id,
                     id: proceso._id,
                     tipo: proceso.tipo,
-                    fecha: dateTimeZConverter(proceso.fecha) || proceso.fecha,
+                    fecha: dateTimeZConverter(proceso.createdAt) || proceso.createdAt,
                     responsable: proceso.responsable ?
-                        `${proceso.responsable.nombres} ${proceso.responsable.apellidos}` :
+                        `${proceso.responsable.nombres || ''} ${proceso.responsable.apellidos || ''}`.trim() :
                         'No asignado',
-                    detalles: includeFullDetails ? proceso.detalles : undefined
+                    sede: proceso.sede,
+                    estado: proceso.estado,
+                    detalles: includeFullDetails ? proceso.detalles : proceso.detalles,
+                    createdAt: proceso.createdAt
                 })) || [],
                 fechas: {
                     fecCreacion: operacion.createdAt || '',
-                    inicio: dateTimeZConverter(operacion?.fecInicio) || operacion.fecInicio || '',
-                    final: dateTimeZConverter(operacion?.fecFinal) || operacion.fecFinal || ''
+                    inicio: operacion.fecInicio || '',
+                    final: operacion.fecFinal || ''
                 },
+                fecInicio: operacion.fecInicio,
+                fecFinal: operacion.fecFinal,
                 estadoOperacion: operacion.estadoOperacion,
                 currentStage: operacion.currentStage,
+                createdAt: operacion.createdAt,
+                updatedAt: operacion.updatedAt,
                 hasFullDetails: includeFullDetails,
                 lastUpdated: Date.now()
             };
