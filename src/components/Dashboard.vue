@@ -181,7 +181,7 @@ async function fetchDashboardMetrics() {
   error.value = null;
   
   try {
-    const response = await axios.get('http://localhost:8085/operacion/dashboard/metrics');
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/operacion/dashboard/metrics`);
     dashboardData.value = response.data;
   } catch (err) {
     console.error('Error fetching dashboard metrics:', err);
